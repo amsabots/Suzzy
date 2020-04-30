@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Suzzy</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="googleapikey">AIzaSyCRVuxylIitzJeA5W8EOnJe6LF6NiKMd_o</string>
+    <string name="facebook_application_id" translatable="false">523611745211059</string>
+    <!-- Facebook Application ID, prefixed by 'fb'. Enables Chrome Custom tabs. -->
+    <string name="facebook_login_protocol_scheme" translatable="false">fb523611745211059</string>
+    <string name="facebook_app_id">523611745211059</string>
+    <string name="fb_login_protocol_scheme">fb523611745211059</string>
+    <string name="add_to_cart">add to cart</string>
+    <string name="save_to_list">Save to List</string>
+
+</resources>

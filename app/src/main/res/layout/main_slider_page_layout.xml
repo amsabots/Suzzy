@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/main_slider_imageview"
+            android:src="@mipmap/background"
+            android:contentDescription="image view"
+            />
+
+        <TextView
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="#8C000000"
+            android:fontFamily="@font/arapey"
+            android:id="@+id/main_slider_textview"
+            android:gravity="center_horizontal"
+            android:text="We deliver at your doorstep"
+            android:textColor="@color/colorWhite" />
+    </FrameLayout>
