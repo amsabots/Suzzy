@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.example.suzzy.MainFrags.CartFrag;
 import com.example.suzzy.MainFrags.HomeFrag;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFrag()).commit();
         layout = findViewById(R.id.fragment_container);
+        hideBottomBar(false);
         if(FirebaseAuth.getInstance().getCurrentUser() == null){
             startActivity(new Intent(MainActivity.this, CreateAccount.class)
                     .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK));
@@ -88,4 +90,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 
     }
+    public void hideBottomBar(boolean isHidden){
+        bottomNavigationView.setVisibility(isHidden ? View.GONE : View.VISIBLE);
+    }
+
 }

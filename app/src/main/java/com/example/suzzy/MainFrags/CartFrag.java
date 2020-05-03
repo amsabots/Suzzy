@@ -1,14 +1,7 @@
 package com.example.suzzy.MainFrags;
 
 import android.app.ProgressDialog;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
 import com.example.suzzy.Cart.CartList;
-import com.example.suzzy.Cart.ProductList;
+import com.example.suzzy.MainActivity;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -38,6 +29,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 
 public class CartFrag extends Fragment {
     private RecyclerView recyclerView;
@@ -45,6 +41,8 @@ public class CartFrag extends Fragment {
     FirebaseRecyclerAdapter adapter;
     String User;
     List<CartList> list;
+    TextView subTotal;
+    Button checkout;
 
 
     @Override
@@ -61,8 +59,14 @@ public class CartFrag extends Fragment {
         recyclerView = view.findViewById(R.id.cart_item_list_recyclerview);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        subTotal = view.findViewById(R.id.proceed_to_checkout_sub_total);
+        checkout = view.findViewById(R.id.proceed_to_checkout_button);
         User = FirebaseAuth.getInstance()
                 .getCurrentUser().getUid();
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity != null)
+            activity.hideBottomBar(true);
+        getSubtotal(User);
         return view;
     }
 
@@ -293,6 +297,41 @@ public class CartFrag extends Fragment {
             }
         });
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity != null)
+            activity.hideBottomBar(false);
+    }
+    public void getSubtotal(String currentUser){
+        final DatabaseReference qry = FirebaseDatabase.getInstance()
+                .getReference().child("Users").child(currentUser).child("Cart");
+        qry.keepSynced(true);
+        qry.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                long total = 0;
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot items:dataSnapshot.getChildren()
+                         ) {
+                        long price = items.child("price").getValue(Long.class);
+                        long number = items.child("number").getValue(Long.class);
+                        total += (price*number);
+                        subTotal.setText("Sub Total: Ksh "+ total);
+                    }
+                }else subTotal.setText("Sub Total: Ksh 0");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
 }
 
 
