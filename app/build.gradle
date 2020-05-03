@@ -51,6 +51,8 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
     implementation 'com.facebook.fresco:fresco:2.2.0'
     implementation 'com.facebook.fresco:animated-gif:2.2.0'
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
+    //android paging library
     implementation 'androidx.paging:paging-runtime:2.1.2'
 //    A smart searchable searchvie
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
