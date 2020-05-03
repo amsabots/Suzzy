@@ -20,9 +20,9 @@
         app:layout_constraintTop_toTopOf="@+id/linearLayout2">
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@+id/product_image"
-            android:layout_width="90dp"
+            android:layout_width="120dp"
             android:background="#FFF"
-            android:layout_height="90dp"
+            android:layout_height="120dp"
             android:src="@mipmap/background"
             fresco:roundedCornerRadius="5dp"
             fresco:roundTopEnd="true"

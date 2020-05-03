@@ -1,9 +1,29 @@
 package com.example.suzzy.Cart;
 
-public class ProductList {
+public class CartList {
     private long price, number, millis;
     private String unit, size, name, id, imageurl, tag, categoryid, desc;
-boolean loading;
+    boolean loading;
+
+    public CartList() {
+    }
+
+    public CartList(long price, long number, long millis, String unit, String size,
+                    String name, String id, String imageurl, String tag,
+                    String categoryid, String desc) {
+        this.price = price;
+        this.number = number;
+        this.millis = millis;
+        this.unit = unit;
+        this.size = size;
+        this.name = name;
+        this.id = id;
+        this.imageurl = imageurl;
+        this.tag = tag;
+        this.categoryid = categoryid;
+        this.desc = desc;
+    }
+
     public String getDesc() {
         return desc;
     }
@@ -12,22 +32,6 @@ boolean loading;
         this.desc = desc;
     }
 
-    boolean like, cart;
-
-    public ProductList(long price, String unit, String size, String name, String id,
-                       String imageurl, String tag, String categoryid, boolean like, boolean cart, String desc) {
-        this.price = price;
-        this.unit = unit;
-        this.size = size;
-        this.name = name;
-        this.id = id;
-        this.imageurl = imageurl;
-        this.tag = tag;
-        this.categoryid = categoryid;
-        this.like = like;
-        this.cart = cart;
-        this.desc = desc;
-    }
 
     public long getNumber() {
         return number;
@@ -51,9 +55,6 @@ boolean loading;
 
     public void setLoading(boolean loading) {
         this.loading = loading;
-    }
-
-    public ProductList() {
     }
 
     public long getPrice() {
@@ -119,20 +120,5 @@ boolean loading;
     public void setCategoryid(String categoryid) {
         this.categoryid = categoryid;
     }
-
-    public boolean isLike() {
-        return like;
-    }
-
-    public void setLike(boolean like) {
-        this.like = like;
-    }
-
-    public boolean isCart() {
-        return cart;
-    }
-
-    public void setCart(boolean cart) {
-        this.cart = cart;
-    }
 }
+

@@ -1,12 +1,15 @@
 package com.example.suzzy.Cart;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -197,81 +200,22 @@ public class Categories extends AppCompatActivity {
         adapter.notifyDataSetChanged();
         DatabaseReference cart = FirebaseDatabase.getInstance().getReference().child("Users")
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child("Cart").child(list.get(position).getCategoryid()).child(list.get(position).getId());
-
-       CartList cartList = new CartList(1, System.currentTimeMillis(), false, false, false);
-       cart.setValue(cartList).addOnCompleteListener(new OnCompleteListener<Void>() {
-           @Override
-           public void onComplete(@NonNull Task<Void> task) {
-              if(task.isSuccessful()){
-                  list.get(position).setLoading(false);
-                  adapter.notifyDataSetChanged();
-                  Toast.makeText(Categories.this, "added to cart", Toast.LENGTH_SHORT).show();
-
-              }else{
-                  list.get(position).setLoading(false);
-                  adapter.notifyDataSetChanged();
-                  Toast.makeText(Categories.this, "please try again", Toast.LENGTH_SHORT).show();
-              }           }
-       });
-
-
+                .child("Cart").push();
+        ProductList p = list.get(position);
+        CartList cartList = new CartList(p.getPrice(), 1, System.currentTimeMillis(), p.getUnit(), p.getSize(),
+                p.getName(), p.getId(), p.getImageurl(), p.getTag(), p.getCategoryid(), p.getDesc());
+        cart.setValue(cartList).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+               if(task.isSuccessful()){
+                   Toast.makeText(Categories.this, "Added to cart", Toast.LENGTH_SHORT).show();
+               } else{
+                   Toast.makeText(Categories.this, "Task failed, Please try again", Toast.LENGTH_SHORT).show();
+               }
             }
-            public class CartList{
-        long number, time;
-        boolean payment, delivery, cancelled;
+        });
 
-                public CartList(long number, long time,
-                                boolean payment, boolean delivery, boolean cancelled) {
-                    this.number = number;
-                    this.time = time;
-                    this.payment = payment;
-                    this.delivery = delivery;
-                    this.cancelled = cancelled;
-                }
 
-                public CartList() {
-                }
-
-                public long getNumber() {
-                    return number;
-                }
-
-                public void setNumber(long number) {
-                    this.number = number;
-                }
-
-                public long getTime() {
-                    return time;
-                }
-
-                public void setTime(long time) {
-                    this.time = time;
-                }
-
-                public boolean isPayment() {
-                    return payment;
-                }
-
-                public void setPayment(boolean payment) {
-                    this.payment = payment;
-                }
-
-                public boolean isDelivery() {
-                    return delivery;
-                }
-
-                public void setDelivery(boolean delivery) {
-                    this.delivery = delivery;
-                }
-
-                public boolean isCancelled() {
-                    return cancelled;
-                }
-
-                public void setCancelled(boolean cancelled) {
-                    this.cancelled = cancelled;
-                }
             }
 
 

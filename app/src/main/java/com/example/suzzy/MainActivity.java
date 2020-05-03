@@ -7,7 +7,6 @@ import android.os.PersistableBundle;
 import android.view.MenuItem;
 
 import com.example.suzzy.MainFrags.CartFrag;
-import com.example.suzzy.MainFrags.CategoryFrag;
 import com.example.suzzy.MainFrags.HomeFrag;
 import com.example.suzzy.MainFrags.MoreFrag;
 import com.facebook.drawee.backends.pipeline.Fresco;

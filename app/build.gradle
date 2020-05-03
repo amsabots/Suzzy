@@ -54,5 +54,9 @@ dependencies {
     implementation 'androidx.paging:paging-runtime:2.1.2'
 //    A smart searchable searchvie
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
+    //more lines of  codes detected
     implementation 'androidx.multidex:multidex:2.0.1'
+    //animating the views while an action is continuing
+    implementation 'com.daimajia.easing:library:2.0@aar'
+    implementation 'com.daimajia.androidanimations:library:2.3@aar'
 }
