@@ -11,5 +11,9 @@
     <string name="fb_login_protocol_scheme">fb523611745211059</string>
     <string name="add_to_cart">add to cart</string>
     <string name="save_to_list">Save to List</string>
+    <string name="logout_message">All your Cart history,
+        Payment info and History, Location: (city and residential) you
+        submitted will be preserved. You can always come next time</string>
+    <string name="delete">All search history, Account email, Cart info and history and payment and location information will be deleted.\nYou cannot recover</string>
 
 </resources>

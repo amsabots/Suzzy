@@ -5,7 +5,8 @@
     <color name="colorPrimaryDark">#089EFB</color>
     <color name="colorAccent">#DF0165</color>
     <color name="colorWhite">#FFF</color>
-    <color name="colorDarkLighr">#737171</color>
+    <color name="colorDarkLighr">#858484</color>
     <color name="colorblack">#171717</color>
     <color name="colorGreyBackground">#E4E4E4</color>
+    <color name="colorred">#9A0202</color>
 </resources>
