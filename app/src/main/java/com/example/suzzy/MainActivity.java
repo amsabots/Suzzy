@@ -7,6 +7,7 @@ import android.os.PersistableBundle;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainFrags.CartFrag;
 import com.example.suzzy.MainFrags.HomeFrag;
 import com.example.suzzy.MainFrags.MoreFrag;
@@ -40,11 +41,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new HomeFrag()).commit();
         layout = findViewById(R.id.fragment_container);
         hideBottomBar(false);
-        if(FirebaseAuth.getInstance().getCurrentUser() == null){
-            startActivity(new Intent(MainActivity.this, CreateAccount.class)
-                    .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK));
-            finish();
-        }
     }
 
     @Override
@@ -57,7 +53,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                // bottomNavigationView.setSelectedItemId(R.id.bottom_nav_home);
                 break;
             case R.id.bottom_nav_cart:
-                transaction.replace(R.id.fragment_container, new CartFrag()).commit();
+              if(FirebaseAuth.getInstance().getCurrentUser() != null)
+                  transaction.replace(R.id.fragment_container, new CartFrag()).commit();
+              else
+                  new General().openAccountCreation(MainActivity.this);
                // bottomNavigationView.setSelectedItemId(R.id.bottom_nav_cart);
                 break;
             case R.id.bottom_nav_more:

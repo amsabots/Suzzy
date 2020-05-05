@@ -49,10 +49,14 @@ public class CreateAccount extends AppCompatActivity {
                     DatabaseReference Users = FirebaseDatabase.getInstance().getReference().child("Users");
                     Users.child(user).child("email").setValue(response.getEmail());
                     startActivity(new Intent(CreateAccount.this, MainActivity.class)
-                            .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                     finish();
 
 
+                }else {
+                    startActivity(new Intent(CreateAccount.this, MainActivity.class)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                    finish();
                 }
                 // ...
             } else {

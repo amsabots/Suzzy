@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.InterfaceMethods.IfireBase;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -36,6 +37,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,6 +52,7 @@ public class Categories extends AppCompatActivity {
     private RecyclerView productsRecyclerv;
     private static final String TAG = "Categories";
     FirebaseRecyclerAdapter adapter;
+    private List<ProductList> list;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,7 +65,7 @@ public class Categories extends AppCompatActivity {
         productsRecyclerv.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    public class ItemsCategoryAdapter extends RecyclerView.ViewHolder{
+    public static class ItemsCategoryAdapter extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView tag, price, unit, name, size, save_status, product_add_to_cart;
         LinearLayout save;
         SimpleDraweeView imageview;
@@ -82,13 +85,34 @@ public class Categories extends AppCompatActivity {
             product_add_to_cart = itemView.findViewById(R.id.product_add_to_cart);
             saveTolist = itemView.findViewById(R.id.product_save_to_list);
             save_status_image = itemView.findViewById(R.id.save_status);
+            saveTolist.setOnClickListener(this);
+            product_add_to_cart.setOnClickListener(this);
 
         }
+
+        @Override
+        public void onClick(View v) {
+          if(v.getId() == R.id.product_add_to_cart){
+              listener.onAddClicked(getAdapterPosition());
+          }else if(v.getId() == R.id.product_save_to_list){
+              listener.onLikeClicked(getAdapterPosition());
+          }
+        }
+
+        public interface OnItemClickListener{
+            void onAddClicked(int position);
+            void onLikeClicked(int index);
+        }
+        public void setOnItemClickListener(OnItemClickListener onItemClickListener){
+         this.listener = onItemClickListener;
+        }
+        OnItemClickListener listener;
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        list = new ArrayList<>();
         query = FirebaseDatabase.getInstance().getReference().child("products");
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
@@ -108,14 +132,28 @@ public class Categories extends AppCompatActivity {
                         .build();
 
       adapter   = new FirebaseRecyclerAdapter<ProductList, ItemsCategoryAdapter>(options) {
-            private ArrayList<ProductList> list = new ArrayList<>();
             @Override
             public ItemsCategoryAdapter onCreateViewHolder(ViewGroup parent, int viewType) {
 
                 View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.category_item_list_cardview, parent, false);
 
-                return new ItemsCategoryAdapter(view);
+               ItemsCategoryAdapter itemsCategoryAdapter = new ItemsCategoryAdapter(view);
+               itemsCategoryAdapter.setOnItemClickListener(new ItemsCategoryAdapter.OnItemClickListener() {
+                   @Override
+                   public void onAddClicked(int position) {
+                   if(FirebaseAuth.getInstance().getCurrentUser() !=null)
+                       saveToUserCart(position);
+                   else
+                       new General().openAccountCreation(Categories.this);
+                   }
+
+                   @Override
+                   public void onLikeClicked(int index) {
+
+                   }
+               });
+               return  itemsCategoryAdapter;
             }
 
             @Override
@@ -129,12 +167,6 @@ public class Categories extends AppCompatActivity {
                 viewHolder.size.setVisibility(model.getSize()!=null?View.VISIBLE:View.GONE);
                 viewHolder.tag.setText(model.getTag());
                 viewHolder.unit.setText(model.getUnit());
-                viewHolder.product_add_to_cart.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                    saveToUserCart(position, list);
-                    }
-                });
             }
         };
         productsRecyclerv.setAdapter(adapter);
@@ -195,7 +227,7 @@ public class Categories extends AppCompatActivity {
 
     }
 
-    private void saveToUserCart(final int position, final ArrayList<ProductList> list) {
+    private void saveToUserCart(int position) {
         list.get(position).setLoading(true);
         adapter.notifyDataSetChanged();
         DatabaseReference cart = FirebaseDatabase.getInstance().getReference().child("Users")
