@@ -3,7 +3,7 @@ package com.example.suzzy.Cart;
 public class ProductList {
     private long price, number, millis;
     private String unit, size, name, id, imageurl, tag, categoryid, desc;
-boolean loading;
+    boolean loading;
     public String getDesc() {
         return desc;
     }

@@ -83,11 +83,12 @@
                 android:background="@color/colorWhite">
 
                 <LinearLayout
+                    android:id="@+id/dots_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|bottom"
                     android:layout_marginBottom="5dp"
-                    android:orientation="horizontal"/>
+                    android:orientation="horizontal" />
 
                 <androidx.viewpager.widget.ViewPager
                     android:id="@+id/product_item_viewpager"
@@ -150,7 +151,7 @@
                     app:layout_constraintTop_toTopOf="@+id/item_detail_price" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/item-detail_add_to_cart_btn"
+                    android:id="@+id/item_detail_add_to_cart_btn"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -230,7 +231,9 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/item_detail_related_recycler_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:background="@color/colorWhite">
 
                 <TextView
                     android:id="@+id/textView12"
