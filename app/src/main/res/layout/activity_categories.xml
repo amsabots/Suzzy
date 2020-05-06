@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <include
-        android:id="@+id/include"
+        android:id="@+id/category_toolbar"
         layout="@layout/category_tool_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -22,8 +22,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/category_list_result_count"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/category_list_result_count" />
 
     <LinearLayout
         android:id="@+id/category_list_result_count"
@@ -32,6 +31,13 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/include"></LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/category_toolbar" />
 
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/category_snack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></androidx.coordinatorlayout.widget.CoordinatorLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

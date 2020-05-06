@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".MainFrags.CartFrag">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -77,18 +78,25 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/ic_arrow_white" />
+                android:src="@drawable/ic_arrow_white"
+                android:id="@+id/cart_get_to_parent"/>
 
-            <ImageView
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="8" />
+                android:layout_weight="8"
+                android:fontFamily="@font/aclonica"
+                android:gravity="center_horizontal"
+                android:text="Suzan`s Shop"
+                android:textColor="@color/colorWhite"
+                android:textSize="18sp" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/ic_clear_black_24dp" />
+                android:src="@drawable/ic_add_shopping_cart_black_24dp"
+                android:id="@+id/cart_get_to_parent_cancel"/>
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
     <androidx.cardview.widget.CardView

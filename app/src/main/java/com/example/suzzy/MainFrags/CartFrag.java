@@ -1,6 +1,7 @@
 package com.example.suzzy.MainFrags;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.suzzy.Cart.CartList;
+import com.example.suzzy.Cart.Categories;
 import com.example.suzzy.MainActivity;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -18,6 +20,7 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,12 +33,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
-public class CartFrag extends Fragment {
+public class CartFrag extends AppCompatActivity implements  View.OnClickListener{
     private RecyclerView recyclerView;
     private ProgressDialog progressDialog;
     FirebaseRecyclerAdapter adapter;
@@ -43,35 +48,44 @@ public class CartFrag extends Fragment {
     List<CartList> list;
     TextView subTotal;
     Button checkout;
+    BottomNavigationView bottomNavigationView;
+    ImageView arro_back, cancel_back;
 
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+        setContentView(R.layout.fragment_cart);
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_cart, container, false);
         //main cart recyclerview
-        recyclerView = view.findViewById(R.id.cart_item_list_recyclerview);
+        recyclerView = findViewById(R.id.cart_item_list_recyclerview);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        subTotal = view.findViewById(R.id.proceed_to_checkout_sub_total);
-        checkout = view.findViewById(R.id.proceed_to_checkout_button);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        subTotal = findViewById(R.id.proceed_to_checkout_sub_total);
+        checkout = findViewById(R.id.proceed_to_checkout_button);
+        arro_back = findViewById(R.id.cart_get_to_parent);
+        cancel_back = findViewById(R.id.cart_get_to_parent_cancel);
+        arro_back.setOnClickListener(this);
+        cancel_back.setOnClickListener(this);
         User = FirebaseAuth.getInstance()
                 .getCurrentUser().getUid();
-        MainActivity activity = (MainActivity) getActivity();
-        if (activity != null)
-            activity.hideBottomBar(true);
         getSubtotal(User);
-        return view;
+    }
+
+    @Override
+    public void onClick(View v) {
+    switch (v.getId()){
+        case R.id.cart_get_to_parent_cancel:
+            startActivity(new Intent(CartFrag.this, Categories.class));
+            break;
+        case R.id.cart_get_to_parent:
+            startActivity(new Intent(CartFrag.this, MainActivity.class));
+            break;
+    }
     }
 
 
-    public static class viewHolder extends RecyclerView.ViewHolder {
+    public static class viewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         SimpleDraweeView itemImage;
         TextView name, number, price, tag, unit, size, remove, item_total;
         ImageView add, minus;
@@ -89,33 +103,45 @@ public class CartFrag extends Fragment {
             minus = itemView.findViewById(R.id.cart_item_minus);
             itemImage = itemView.findViewById(R.id.product_image);
             item_total = itemView.findViewById(R.id.item_total);
-            add.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.OnAddItems(getAdapterPosition());
-                }
-            });
-            minus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onRemoveItems(getAdapterPosition());
-                }
-            });
-            remove.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onDeleteItems(getAdapterPosition());
-                }
-            });
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onOpenDetailsActivity(getAdapterPosition());
-                }
-            });
+            itemView.setOnClickListener(this);
+            minus.setOnClickListener(this);
+            add.setOnClickListener(this);
+            remove.setOnClickListener(this);
+
         }
 
         viewHolder.OnItemClickListener listener;
+
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.cart_item_minus:
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onRemoveItems(position);
+                        }
+                    }
+                    break;
+                case R.id.cart_item_add:
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.OnAddItems(position);
+                        }
+                    }
+                    break;
+                case R.id.product_remove_from_cart:
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onDeleteItems(position);
+                        }
+                    }
+                    break;
+
+            }
+        }
 
         public interface OnItemClickListener {
             void OnAddItems(int index);
@@ -167,10 +193,9 @@ public class CartFrag extends Fragment {
                 viewHolder.size.setVisibility(model.getSize() != null ? View.VISIBLE : View.GONE);
                 viewHolder.tag.setText(model.getTag());
                 viewHolder.unit.setText(model.getUnit());
-                viewHolder.minus.setEnabled(model.getNumber()>1?true:false);
+                viewHolder.minus.setEnabled(model.getNumber() > 1 ? true : false);
                 viewHolder.number.setText(Long.toString(model.getNumber()));
-                viewHolder.item_total.setText("KSh "+(int) (model.getNumber() * model.getPrice()));
-
+                viewHolder.item_total.setText("KSh " + (int) (model.getNumber() * model.getPrice()));
 
 
             }
@@ -179,7 +204,6 @@ public class CartFrag extends Fragment {
         recyclerView.setAdapter(adapter);
         adapter.startListening();
     }
-
 
 
     void loadviewholder(viewHolder vh) {
@@ -203,10 +227,11 @@ public class CartFrag extends Fragment {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
-                                                    //Toast.makeText(getContext(), "+1", Toast.LENGTH_SHORT).show();
+                                                    adapter.notifyDataSetChanged();
+                                                    //Toast.makeText(CartFrag.this, "+1", Toast.LENGTH_SHORT).show();
 
                                                 } else {
-                                                    Toast.makeText(getContext(), "failed, try again", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(CartFrag.this, "failed, try again", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                         });
@@ -218,7 +243,7 @@ public class CartFrag extends Fragment {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(getContext(), "failed, try again", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(CartFrag.this, "failed, try again", Toast.LENGTH_SHORT).show();
                             }
                         });
 
@@ -240,9 +265,10 @@ public class CartFrag extends Fragment {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
-                                                    //Toast.makeText(getContext(), "-1", Toast.LENGTH_SHORT).show();
+                                                    adapter.notifyDataSetChanged();
+                                                    //Toast.makeText(CartFrag.this, "-1", Toast.LENGTH_SHORT).show();
                                                 } else {
-                                                    Toast.makeText(getContext(), "failed, try again", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(CartFrag.this, "failed, try again", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                         });
@@ -254,13 +280,13 @@ public class CartFrag extends Fragment {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(getContext(), "failed, try again", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(CartFrag.this, "failed, try again", Toast.LENGTH_SHORT).show();
                             }
                         });
             }
 
             @Override
-            public void onDeleteItems(int index) {
+            public void onDeleteItems(final int index) {
                 CartList addlist = list.get(index);
                 qry.orderByChild("id").equalTo(addlist.getId())
                         .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -274,9 +300,11 @@ public class CartFrag extends Fragment {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
-                                                    Toast.makeText(getContext(), "product has been removed", Toast.LENGTH_SHORT).show();
+                                                       list.remove(index);
+                                                       adapter.notifyItemRemoved(index);
+                                                       adapter.notifyItemRangeChanged(index, list.size());
                                                 } else {
-                                                    Toast.makeText(getContext(), "failed, try again", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(CartFrag.this, "failed, try again", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                         });
@@ -286,7 +314,7 @@ public class CartFrag extends Fragment {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(getContext(), "failed, try again", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(CartFrag.this, "failed, try again", Toast.LENGTH_SHORT).show();
                             }
                         });
             }
@@ -298,14 +326,8 @@ public class CartFrag extends Fragment {
         });
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        MainActivity activity = (MainActivity) getActivity();
-        if (activity != null)
-            activity.hideBottomBar(false);
-    }
-    public void getSubtotal(String currentUser){
+
+    public void getSubtotal(String currentUser) {
         final DatabaseReference qry = FirebaseDatabase.getInstance()
                 .getReference().child("Users").child(currentUser).child("Cart");
         qry.keepSynced(true);
@@ -313,15 +335,15 @@ public class CartFrag extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 long total = 0;
-                if(dataSnapshot.exists()){
-                    for (DataSnapshot items:dataSnapshot.getChildren()
-                         ) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot items : dataSnapshot.getChildren()
+                    ) {
                         long price = items.child("price").getValue(Long.class);
                         long number = items.child("number").getValue(Long.class);
-                        total += (price*number);
-                        subTotal.setText("Sub Total: Ksh "+ total);
+                        total += (price * number);
+                        subTotal.setText("Sub Total: Ksh " + total);
                     }
-                }else subTotal.setText("Sub Total: Ksh 0");
+                } else subTotal.setText("Sub Total: Ksh 0");
             }
 
             @Override
