@@ -25,7 +25,6 @@ public interface OnItemClickListener{
     void onLikedClikcked(int position);
     void onAddItemClicked(int position);
     void openDetailsClicked(int position);
-    void returnlistsize(int size);
 }
 public void setOnItemclickListener(OnItemClickListener listener){
    this.listener = listener;
@@ -58,16 +57,13 @@ public void setOnItemclickListener(OnItemClickListener listener){
 
     @Override
     public int getItemCount() {
-    listener.returnlistsize(list.size());
         return list.size();
     }
 
     public static class viewHolder extends  RecyclerView.ViewHolder{
-        TextView tag, price, unit, name, size, save_status, product_add_to_cart;
-        LinearLayout save;
+        TextView tag, price, unit, name, size, product_add_to_cart;
         SimpleDraweeView imageview;
         LinearLayout saveTolist;
-        ImageView save_status_image;
         public viewHolder(@NonNull View itemView, final OnItemClickListener listener) {
             super(itemView);
             tag = itemView.findViewById(R.id.product_tag);
@@ -75,12 +71,9 @@ public void setOnItemclickListener(OnItemClickListener listener){
             unit = itemView.findViewById(R.id.product_unit);
             name = itemView.findViewById(R.id.product_name);
             size = itemView.findViewById(R.id.product_size);
-            save = itemView.findViewById(R.id.product_save_to_list);
-            save_status = itemView.findViewById(R.id.product_save_status);
             imageview = itemView.findViewById(R.id.product_image);
             product_add_to_cart = itemView.findViewById(R.id.product_add_to_cart);
             saveTolist = itemView.findViewById(R.id.product_save_to_list);
-            save_status_image = itemView.findViewById(R.id.save_status);
             product_add_to_cart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -90,17 +83,6 @@ public void setOnItemclickListener(OnItemClickListener listener){
                           listener.onAddItemClicked(index);
                       }
                   }
-                }
-            });
-          saveTolist.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                   if(listener != null){
-                       int index = getAdapterPosition();
-                       if(index != RecyclerView.NO_POSITION){
-                           listener.onLikedClikcked(index);
-                       }
-                   }
                 }
             });
            itemView.setOnClickListener(new View.OnClickListener() {

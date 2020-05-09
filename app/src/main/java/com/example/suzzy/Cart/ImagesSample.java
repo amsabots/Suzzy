@@ -18,13 +18,7 @@ import androidx.viewpager.widget.PagerAdapter;
 public  class ImagesSample extends PagerAdapter {
     List<Product_Details.ImagesList> list;
     Context context;
-    getPicturesNumber listener;
-    public interface getPicturesNumber{
-        void returnImagesnumber(int size);
-    }
-    public void getImagesNumber(getPicturesNumber number){
-        this.listener = number;
-    }
+
     public ImagesSample(List<Product_Details.ImagesList> list, Context context) {
         this.list = list;
         this.context = context;
@@ -32,9 +26,7 @@ public  class ImagesSample extends PagerAdapter {
 
     @Override
     public int getCount() {
-        if(listener != null){
-            listener.returnImagesnumber(list.size());
-        }
+
         return list.size();
     }
 

@@ -55,9 +55,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-public class Product_Details extends AppCompatActivity implements ProductDetails_Adapter.OnCardItemClickListener,
-        ImagesSample.getPicturesNumber
-        {
+public class Product_Details extends AppCompatActivity implements ProductDetails_Adapter.OnCardItemClickListener{
     ViewPager viewpager;
     TextView[] dots;
     ImagesSample adapter;
@@ -89,7 +87,6 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
         initViews();
         //init the productList
         imagesLists = new ArrayList<>();
-       mainItemList = new ArrayList<>();
         dialogue = new ProgressDialog(this);
         snack = findViewById(R.id.detail_snack);
         LoadProductInfo(item_id, category_id);
@@ -98,10 +95,17 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
         getRelatedProducts(item_id, category_id);
         itemsAdapter = new ProductDetails_Adapter(this, mainItemList);
         itemsAdapter.setOnCardClickListener(this);
+        item_detail_recycler.setHasFixedSize(true);
+        item_detail_recycler.setLayoutManager(new LinearLayoutManager(this,
+                LinearLayoutManager.HORIZONTAL,
+                false));
+        item_detail_recycler.setNestedScrollingEnabled(false);
+        item_detail_recycler.setAdapter(itemsAdapter);
 
     }
 
     private void getRelatedProducts(final String id, String category_id) {
+        mainItemList = new ArrayList<>();
         Query ref = FirebaseDatabase.getInstance().getReference()
                 .child("products")
                 .orderByChild("categoryid").equalTo(category_id);
@@ -111,7 +115,8 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot items : dataSnapshot.getChildren()
                     ) {
-                        if (items.child("id").getValue().toString() != id){
+                        Log.d(TAG, "onDataChange: items"+ items.toString());
+                        if (!items.child("id").getValue().toString().equals(id)){
                           topItemsList list = items.getValue(topItemsList.class);
                           mainItemList.add(list);
                           itemsAdapter.notifyDataSetChanged();
@@ -125,12 +130,7 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
 related_products.setVisibility(View.GONE);
             }
         });
-        item_detail_recycler.setHasFixedSize(true);
-        item_detail_recycler.setLayoutManager(new LinearLayoutManager(this,
-                LinearLayoutManager.HORIZONTAL,
-                false));
-        item_detail_recycler.setNestedScrollingEnabled(false);
-        item_detail_recycler.setAdapter(itemsAdapter);
+
     }
 
     private void LoadProductInfo(final String item_id, final String category_id) {
@@ -228,11 +228,6 @@ related_products.setVisibility(View.GONE);
         intent.putExtra("type", "item");
         startActivity(intent);
     }
-
-            @Override
-            public void returnImagesnumber(int size) {
-                imagessize = size;
-            }
 
 
             //imagesList class

@@ -104,14 +104,18 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
         LoadData(type, categoryid);
         adapter.setOnItemclickListener(this);
 
+
     }
+
+
+
 
     private void LoadData(String type, String categoryid) {
         progressDialog.setMessage("Please wait.........");
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.show();
         Query mainref = null;
-        if(type == "all"){
+        if(type.equals("all")){
             mainref = FirebaseDatabase.getInstance().getReference().child("products");
         }else {
             mainref = FirebaseDatabase.getInstance().getReference().child("products")
@@ -135,6 +139,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                          if(!dataSnapshot.exists()){
+
                              ProductList productList = item.getValue(ProductList.class);
                              list.add(productList);
                              adapter.notifyDataSetChanged();
@@ -191,6 +196,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
 //  }
     }
 
+
     void setUpBadge() {
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
@@ -238,22 +244,6 @@ saveToUserCart(position);
         startActivity(intent);
     }
 
-    @Override
-    public void returnlistsize(int size) {
-        if(size == 0){
-            new MaterialAlertDialogBuilder(Categories.this)
-                    .setTitle("OOOOps!!! We are out of stock")
-                    .setMessage("Seems like the products under this Category are out of stock/n Continue shopping")
-                    .setIcon(R.drawable.ic_info_black_24dp)
-                    .setPositiveButton("Back to Shopping", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            startActivity(new Intent(Categories.this, MainActivity.class));
-                        }
-                    }).setCancelable(false).show();
-        }
-
-    }
 
     public void saveToUserCart(int position) {
         list.get(position).setLoading(true);
