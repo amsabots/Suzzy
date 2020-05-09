@@ -3,6 +3,7 @@ package com.example.suzzy.MainFrags;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 
 import com.example.suzzy.Cart.CartList;
 import com.example.suzzy.Cart.Categories;
+import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainActivity;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -46,10 +48,11 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
     FirebaseRecyclerAdapter adapter;
     String User;
     List<CartList> list;
-    TextView subTotal;
+    TextView subTotal, location, change_location;
     Button checkout;
     BottomNavigationView bottomNavigationView;
     ImageView arro_back, cancel_back;
+    private static final String TAG = "CartFrag";
 
 
     @Override
@@ -70,8 +73,41 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
         User = FirebaseAuth.getInstance()
                 .getCurrentUser().getUid();
         getSubtotal(User);
+        location = findViewById(R.id.cart_location);
+        change_location = findViewById(R.id.cart_change_location);
+        setLocation();
     }
+void setLocation(){
+    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+        String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
+                .child(USERID).child("location");
+        mref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
+                            dataSnapshot.child("city").getValue().toString());
+                    Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
+                }else  location.setText("Not set");
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                location.setText("Not set");
+            }
+        });
+    }  location.setText("Not set");
+    //end of location fetching
+
+    change_location.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if(FirebaseAuth.getInstance().getCurrentUser() == null) new General().openEditLocation(CartFrag.this);
+            else new General().openEditLocation(CartFrag.this);
+        }
+    });
+}
     @Override
     public void onClick(View v) {
     switch (v.getId()){

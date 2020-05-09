@@ -8,6 +8,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.suzzy.R;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.List;
 
@@ -46,10 +47,8 @@ public  class ImagesSample extends PagerAdapter {
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.product_details_images_for_viewpager,
                 container, false);
-        ImageView imageView = view.findViewById(R.id.viewpager_image_text);
-        Glide.with(context)
-                .load(list.get(position).getImages())
-                .into(imageView);
+        SimpleDraweeView imageView = view.findViewById(R.id.viewpager_image_text);
+        imageView.setImageURI(list.get(position).getImages());
         container.addView(view);
         return view;
 

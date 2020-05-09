@@ -65,7 +65,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
     private RecyclerView productsRecyclerv;
     private static final String TAG = "Categories";
     private List<ProductList> list;
-    TextView textCartItemCount;
+    TextView textCartItemCount, location, change_location;
     MaterialToolbar toolbar;
     long count;
     FrameLayout cart_icon_custom;
@@ -104,10 +104,50 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
         LoadData(type, categoryid);
         adapter.setOnItemclickListener(this);
 
+        location = findViewById(R.id.category_location);
+        change_location = findViewById(R.id.category_change_location);
+
+        location.setText(General.getResidence());
+        change_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new General().openEditLocation(Categories.this);
+            }
+        });
+getUplocation();
 
     }
+void getUplocation(){
+    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+        String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
+                .child(USERID).child("location");
+        mref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
+                            dataSnapshot.child("city").getValue().toString());
+                    Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
+                }else  location.setText("Not set");
+            }
 
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                location.setText("Not set");
+            }
+        });
+    }  location.setText("Not set");
+    //end of location fetching
 
+    change_location.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if(FirebaseAuth.getInstance().getCurrentUser() == null) new General().openEditLocation(Categories.this);
+            else new General().openEditLocation(Categories.this);
+        }
+    });
+}
 
 
     private void LoadData(String type, String categoryid) {

@@ -51,6 +51,7 @@
             android:src="@drawable/ic_location_on_black_24dp" />
 
         <TextView
+            android:id="@+id/category_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|center_vertical"
@@ -60,6 +61,7 @@
             android:textSize="11sp" />
 
         <TextView
+            android:id="@+id/category_change_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|center_vertical"

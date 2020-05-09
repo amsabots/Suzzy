@@ -5,11 +5,22 @@ import android.content.DialogInterface;
 import android.content.Intent;
 
 import com.example.suzzy.CreateAccount;
+import com.example.suzzy.MainFrags.MoreFrag;
 import com.example.suzzy.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import androidx.annotation.NonNull;
 
 public class General {
-    public void openAccountCreation(final Context ctx){
+    public static String residence = "location";
+
+    public void openAccountCreation(final Context ctx) {
         new MaterialAlertDialogBuilder(ctx).
                 setMessage("You are not signed in.")
                 .setIcon(R.drawable.ic_info_black_24dp)
@@ -24,5 +35,30 @@ public class General {
                 dialog.dismiss();
             }
         }).show();
+    }
+    public static String getResidence() {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+        String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
+                    .child(USERID).child("location");
+            mref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        residence = dataSnapshot.child("residence").getValue().toString()+", "+
+                                dataSnapshot.child("city").getValue().toString();
+                    } else residence = "not set";
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    residence = "not set";
+                }
+            });
+        } else residence = "not set";
+        return residence;
+    }
+    public void openEditLocation(Context context){
+     context.startActivity(new Intent(context, MoreFrag.class));
     }
 }

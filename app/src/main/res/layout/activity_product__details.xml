@@ -16,11 +16,40 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/productdetails_toolbar"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="0dp" />
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:paddingEnd="8dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingStart="8dp"
+            android:weightSum="10"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_home_black_24dp"
+                android:id="@+id/cart_get_to_parent"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="8"
+                android:fontFamily="@font/aclonica"
+                android:gravity="center_horizontal"
+                android:text="@string/toolbar_header"
+                android:textColor="@color/colorWhite"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_add_shopping_cart_black_24dp"
+                android:id="@+id/cart_get_to_parent_cancel"/>
+        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
@@ -43,6 +72,7 @@
             android:src="@drawable/ic_location_on_black_24dp" />
 
         <TextView
+            android:id="@+id/product_detail_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|center_vertical"
@@ -52,6 +82,7 @@
             android:textSize="11sp" />
 
         <TextView
+            android:id="@+id/product_detail_change_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|center_vertical"
@@ -82,7 +113,14 @@
                 android:layout_height="150dp"
                 android:background="@color/colorWhite"
                 android:padding="10dp">
-
+                <androidx.viewpager.widget.ViewPager
+                    android:id="@+id/product_item_viewpager"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                   android:layout_marginRight="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"/>
                 <LinearLayout
                     android:id="@+id/dots_layout"
                     android:layout_width="wrap_content"
@@ -90,12 +128,6 @@
                     android:layout_gravity="center_horizontal|bottom"
                     android:layout_marginBottom="5dp"
                     android:orientation="horizontal" />
-
-
-                <androidx.viewpager.widget.ViewPager
-                    android:id="@+id/product_item_viewpager"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
             </FrameLayout>
 
 

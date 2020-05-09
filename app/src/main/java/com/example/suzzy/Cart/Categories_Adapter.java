@@ -1,6 +1,7 @@
 package com.example.suzzy.Cart;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +54,15 @@ public void setOnItemclickListener(OnItemClickListener listener){
         viewHolder.size.setVisibility(model.getSize() != null ? View.VISIBLE : View.GONE);
         viewHolder.tag.setText(model.getTag());
         viewHolder.unit.setText(model.getUnit());
+        Drawable yellowtag = context.getResources().getDrawable(R.drawable.texttagsyellow);
+        Drawable blacktag = context.getResources().getDrawable(R.drawable.texttags);
+        yellowtag.mutate();
+        blacktag.mutate();
+        if(model.getTag() != null) {
+            if (model.getTag().toLowerCase().indexOf("express".toLowerCase()) != -1) {
+                viewHolder.tag.setBackground(blacktag);
+            } else viewHolder.tag.setBackground(yellowtag);
+        }
     }
 
     @Override

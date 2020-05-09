@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PersistableBundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.suzzy.Cart.Categories;
@@ -62,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private RecyclerView exploreRecycler, topcategoryRecyclerview, topitemsRecyclerview;
     boolean OndoubleBackpressed = false;
     CoordinatorLayout mainsnack;
+    TextView location, change_location;
+    private static final String TAG = "MainActivity";
 
 
     @Override
@@ -84,6 +88,39 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.getMenu().findItem(R.id.bottom_nav_home).setChecked(true);
         mainsnack = findViewById(R.id.main_snackbar);
+        change_location = findViewById(R.id.main_change_location);
+        location = findViewById(R.id.main_location);
+        //set default location in main toolbar
+
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
+                    .child(USERID).child("location");
+            mref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                       location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
+                               dataSnapshot.child("city").getValue().toString());
+                        Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
+                    }else  location.setText("Not set");
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    location.setText("Not set");
+                }
+            });
+        }  location.setText("Not set");
+        //end of location fetching
+
+        change_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+             if(FirebaseAuth.getInstance().getCurrentUser() == null) new General().openEditLocation(MainActivity.this);
+             else new General().openEditLocation(MainActivity.this);
+            }
+        });
 
 
     }

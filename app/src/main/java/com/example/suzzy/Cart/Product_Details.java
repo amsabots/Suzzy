@@ -19,6 +19,8 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.suzzy.FragmentListClasses.topItemsList;
 import com.example.suzzy.GeneralClasses.General;
+import com.example.suzzy.MainActivity;
+import com.example.suzzy.MainFrags.CartFrag;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -55,13 +57,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-public class Product_Details extends AppCompatActivity implements ProductDetails_Adapter.OnCardItemClickListener{
+public class Product_Details extends AppCompatActivity implements ProductDetails_Adapter.OnCardItemClickListener,
+        View.OnClickListener {
     ViewPager viewpager;
     TextView[] dots;
     ImagesSample adapter;
     String category_id, item_id;
     private static final String TAG = "Product_Details";
-    TextView tag, price, name, desc, size, additional_info, unit;
+    TextView tag, price, name, desc, size, additional_info, unit, location, change_location;
     RecyclerView item_detail_recycler;
     LinearLayout item_tag_info, dotslayout;
     ConstraintLayout related_products;
@@ -74,6 +77,7 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
     CartList cartList;
     int currentImage, imagessize;
     ProductDetails_Adapter itemsAdapter;
+    ImageView arro_back, cancel_back;
 
 
     @Override
@@ -91,7 +95,6 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
         snack = findViewById(R.id.detail_snack);
         LoadProductInfo(item_id, category_id);
         setupviewPager();
-        setDostoCurrentPage(0);
         getRelatedProducts(item_id, category_id);
         itemsAdapter = new ProductDetails_Adapter(this, mainItemList);
         itemsAdapter.setOnCardClickListener(this);
@@ -101,7 +104,48 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
                 false));
         item_detail_recycler.setNestedScrollingEnabled(false);
         item_detail_recycler.setAdapter(itemsAdapter);
+        location = findViewById(R.id.product_detail_location);
+        change_location = findViewById(R.id.product_detail_change_location);
+        setuplocation();
+        arro_back = findViewById(R.id.cart_get_to_parent);
+        cancel_back = findViewById(R.id.cart_get_to_parent_cancel);
+        arro_back.setOnClickListener(this);
+        cancel_back.setOnClickListener(this);
 
+    }
+
+    void setuplocation() {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
+                    .child(USERID).child("location");
+            mref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        location.setText(dataSnapshot.child("residence").getValue().toString() + ", " +
+                                dataSnapshot.child("city").getValue().toString());
+                        Log.i(TAG, "onCreate: Location " + dataSnapshot.toString());
+                    } else location.setText("Not set");
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    location.setText("Not set");
+                }
+            });
+        }
+        location.setText("Not set");
+        //end of location fetching
+
+        change_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (FirebaseAuth.getInstance().getCurrentUser() == null)
+                    new General().openEditLocation(Product_Details.this);
+                else new General().openEditLocation(Product_Details.this);
+            }
+        });
     }
 
     private void getRelatedProducts(final String id, String category_id) {
@@ -112,22 +156,22 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
+                if (dataSnapshot.getChildrenCount() > 1) {
                     for (DataSnapshot items : dataSnapshot.getChildren()
                     ) {
-                        Log.d(TAG, "onDataChange: items"+ items.toString());
-                        if (!items.child("id").getValue().toString().equals(id)){
-                          topItemsList list = items.getValue(topItemsList.class);
-                          mainItemList.add(list);
-                          itemsAdapter.notifyDataSetChanged();
+                        //Log.d(TAG, "onDataChange: items"+ items.toString());
+                        if (!items.child("id").getValue().toString().equals(id)) {
+                            topItemsList list = items.getValue(topItemsList.class);
+                            mainItemList.add(list);
+                            itemsAdapter.notifyDataSetChanged();
                         }
                     }
-                }else related_products.setVisibility(View.GONE);
+                } else related_products.setVisibility(View.GONE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-related_products.setVisibility(View.GONE);
+                related_products.setVisibility(View.GONE);
             }
         });
 
@@ -171,20 +215,22 @@ related_products.setVisibility(View.GONE);
 
 
                     }
-
+                    imagessize = imagesLists.size();
+                    setDostoCurrentPage(0);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 dialogue.dismiss();
-                Snackbar.make(snack, databaseError.getMessage(), BaseTransientBottomBar.LENGTH_LONG).setAction("Retry",
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                LoadProductInfo(item_id, category_id);
-                            }
-                        }).show();
+                Snackbar.make(snack, databaseError.getMessage(), BaseTransientBottomBar.LENGTH_LONG)
+                        .setAction("Retry",
+                                new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        LoadProductInfo(item_id, category_id);
+                                    }
+                                }).show();
 
             }
         });
@@ -195,6 +241,7 @@ related_products.setVisibility(View.GONE);
         viewpager = findViewById(R.id.product_item_viewpager);
         adapter = new ImagesSample(imagesLists, this);
         viewpager.setAdapter(adapter);
+        viewpager.addOnPageChangeListener(pageChangeListener);
     }
 
 
@@ -223,14 +270,28 @@ related_products.setVisibility(View.GONE);
 
     @Override
     public void onCardItemClick(int position) {
-     Intent intent = new Intent(Product_Details.this, Categories.class);
+        Intent intent = new Intent(Product_Details.this, Categories.class);
         intent.putExtra("categoryid", mainItemList.get(position).getCategoryid());
         intent.putExtra("type", "item");
         startActivity(intent);
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.cart_get_to_parent_cancel:
+                Intent intent = new Intent(Product_Details.this, Categories.class);
+                intent.putExtra("type", "all");
+                startActivity(intent);
+                break;
+            case R.id.cart_get_to_parent:
+                startActivity(new Intent(Product_Details.this, MainActivity.class));
+                break;
+        }
+    }
 
-            //imagesList class
+
+    //imagesList class
     public class ImagesList {
         String images;
 
@@ -291,8 +352,7 @@ related_products.setVisibility(View.GONE);
 
         @Override
         public void onPageSelected(int position) {
-            currentImage = position;
-            setDostoCurrentPage(position);
+          setDostoCurrentPage(position);
         }
 
         @Override
@@ -302,19 +362,20 @@ related_products.setVisibility(View.GONE);
     };
 
     void setDostoCurrentPage(int position) {
-        Log.d(TAG, "setDostoCurrentPage: " + imagessize);
+        Log.i(TAG, "setDostoCurrentPage: " + position);
         dots = new TextView[imagessize];
         dotslayout.removeAllViews();
         for (int i = 0; i < imagessize; i++) {
             dots[i] = new TextView(Product_Details.this);
             dots[i].setTextSize(40);
-            dots[i].setTextColor(getResources().getColor(R.color.colorWhite));
+            dots[i].setTextColor(getResources().getColor(R.color.colorPrimary));
             dots[i].setText(Html.fromHtml("&#8226"));
             dotslayout.addView(dots[i]);
-            if (dots.length > 0) {
-                dots[i].setTextColor(getResources().getColor(R.color.colorAccent));
-            }
 
+//            if(dots.length > 0){
+//                dots[position].setTextColor(getResources().getColor(R.color.colorAccent
+//                ));
+//            }
         }
     }
 }

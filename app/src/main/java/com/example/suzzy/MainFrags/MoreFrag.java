@@ -2,6 +2,7 @@ package com.example.suzzy.MainFrags;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -189,6 +190,8 @@ void getAccountDetails(){
         history = findViewById(R.id.fragment_more_history);
         address_loader = findViewById(R.id.spinkit_address);
         phone_loader = findViewById(R.id.spinkit_contact);
+        open_maps.setPaintFlags(open_maps.getPaintFlags()|Paint.UNDERLINE_TEXT_FLAG);
+
 
     }
 

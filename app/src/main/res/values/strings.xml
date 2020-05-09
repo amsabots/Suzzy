@@ -15,5 +15,6 @@
         Payment info and History, Location: (city and residential) you
         submitted will be preserved. You can always come next time</string>
     <string name="delete">All search history, Account email, Cart info and history and payment and location information will be deleted.\nYou cannot recover</string>
+    <string name="toolbar_header">Suzan`s Shop</string>
 
 </resources>

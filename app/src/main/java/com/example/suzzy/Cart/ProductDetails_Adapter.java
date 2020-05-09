@@ -1,6 +1,7 @@
 package com.example.suzzy.Cart;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,15 @@ holder.tag.setText(list.getTag());
 holder.price.setText(String.valueOf(list.getPrice()));
 holder.name.setText(list.getName());
 holder.tag.setVisibility(list.getTag() != null?View.VISIBLE:View.GONE);
+        Drawable yellowtag = ctx.getResources().getDrawable(R.drawable.texttagsyellow);
+        Drawable blacktag = ctx.getResources().getDrawable(R.drawable.texttags);
+        yellowtag.mutate();
+        blacktag.mutate();
+        if(list.getTag() != null) {
+            if (list.getTag().toLowerCase().indexOf("express".toLowerCase()) != -1) {
+                holder.tag.setBackground(blacktag);
+            } else holder.tag.setBackground(yellowtag);
+        }
     }
 
     @Override

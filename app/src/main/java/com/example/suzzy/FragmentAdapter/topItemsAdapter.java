@@ -50,8 +50,18 @@ holder.textView.setText(list.getName());
        holder.tag.setVisibility(list.getTag() !=null?View.VISIBLE:View.GONE);
        holder.tag.setText(list.getTag());
         holder.price.setText("Kshs "+Long.toString(list.getPrice()) +"/"+list.getUnit());
+
         Drawable imgview = context.getResources().getDrawable(R.drawable.itemsdrawable);
+        Drawable yellowtag = context.getResources().getDrawable(R.drawable.texttagsyellow);
+        Drawable blacktag = context.getResources().getDrawable(R.drawable.texttags);
         imgview.mutate();
+        yellowtag.mutate();
+       blacktag.mutate();
+       if(list.getTag() != null) {
+           if (list.getTag().toLowerCase().indexOf("express".toLowerCase()) != -1) {
+               holder.tag.setBackground(blacktag);
+           } else holder.tag.setBackground(yellowtag);
+       }
         holder.cardView.setBackground(imgview);
 
 
