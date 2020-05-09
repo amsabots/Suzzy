@@ -23,7 +23,13 @@ import androidx.recyclerview.widget.RecyclerView;
 public class topItemsAdapter extends RecyclerView.Adapter<topItemsAdapter.viewHolder> {
     private Context context;
     private List<topItemsList> itemsLists;
-
+    OnTopItemCardClickListener listener;
+    public interface OnTopItemCardClickListener{
+        void onTopItemClick(int position);
+    }
+public void setOnCardclickListener(OnTopItemCardClickListener listener){
+        this.listener = listener;
+}
     public topItemsAdapter(Context context, List<topItemsList> itemsLists) {
         this.context = context;
         this.itemsLists = itemsLists;
@@ -33,7 +39,7 @@ public class topItemsAdapter extends RecyclerView.Adapter<topItemsAdapter.viewHo
     @Override
     public viewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.topitems, parent, false);
-        return new viewHolder(view);
+        return new viewHolder(view, listener);
     }
 
     @Override
@@ -56,17 +62,26 @@ holder.textView.setText(list.getName());
         return (itemsLists != null? itemsLists.size():0);
     }
 
-    public class viewHolder extends RecyclerView.ViewHolder {
+    public static class viewHolder extends RecyclerView.ViewHolder {
         private SimpleDraweeView imageView;
         private TextView textView, price, tag;
         private CardView cardView;
-        public viewHolder(@NonNull View itemView) {
+        public  viewHolder(@NonNull View itemView, final OnTopItemCardClickListener mlistener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.category_item_image);
             textView = itemView.findViewById(R.id.category_item_text);
             price = itemView.findViewById(R.id.items_price);
             tag = itemView.findViewById(R.id.items_tag);
             cardView = itemView.findViewById(R.id.main_cardview);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                 if(mlistener != null){
+                    int position = getAdapterPosition();
+                    if(position != RecyclerView.NO_POSITION) mlistener.onTopItemClick(position);
+                 }
+                }
+            });
 
         }
     }

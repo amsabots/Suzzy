@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.suzzy.Cart.Categories;
+import com.example.suzzy.Cart.Product_Details;
 import com.example.suzzy.FragmentAdapter.ExploreandShopAdapter;
 import com.example.suzzy.FragmentAdapter.topCategoryAdapter;
 import com.example.suzzy.FragmentAdapter.topItemsAdapter;
@@ -45,7 +47,9 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
+        topItemsAdapter.OnTopItemCardClickListener, topCategoryAdapter.CategoryCardClickListener,
+        ExploreandShopAdapter.ExploreandShopCardClickListener {
     BottomNavigationView bottomNavigationView;
     private DatabaseReference mDatabase;
     CoordinatorLayout snackbar;
@@ -93,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 2, GridLayoutManager.HORIZONTAL, false));
         adapter = new ExploreandShopAdapter(MainActivity.this, toplist);
         exploreRecycler.setAdapter(adapter);
+        adapter.setOnExploreandShopClickListener(this);
     }
 
     void initTopCategory() {
@@ -102,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         topcategoryRecyclerview.setLayoutManager(new GridLayoutManager(MainActivity.this, 2, GridLayoutManager.VERTICAL, false));
         categoryAdapter = new topCategoryAdapter(MainActivity.this, categoryList);
         topcategoryRecyclerview.setAdapter(categoryAdapter);
+        categoryAdapter.setOnCategoryCardClickListener(this);
 
 
     }
@@ -113,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         topitemsRecyclerview.setNestedScrollingEnabled(false);
         itemsAdapter = new topItemsAdapter(MainActivity.this, topItemsLists);
         topitemsRecyclerview.setAdapter(itemsAdapter);
+        itemsAdapter.setOnCardclickListener(this);
 
     }
     void LoadtopItemsList(){
@@ -204,5 +211,30 @@ public static boolean isLogged(){
 
           }
       }, 2000);
+    }
+
+    @Override
+    public void onTopItemClick(int position) {
+        Intent intent = new Intent(MainActivity.this,Product_Details.class);
+        intent.putExtra("category", topItemsLists.get(position).getCategoryid());
+        intent.putExtra("item", topItemsLists.get(position).getId());
+        startActivity(intent);
+
+    }
+
+    @Override
+    public void onCategoryCardClick(int position) {
+        Intent intent = new Intent(MainActivity.this, Categories.class);
+        intent.putExtra("categoryid", categoryList.get(position).getCategoryID());
+        intent.putExtra("type", "category");
+        startActivity(intent);
+    }
+
+    @Override
+    public void ExploreShopClick(int position) {
+        Intent intent = new Intent(MainActivity.this, Categories.class);
+        intent.putExtra("categoryid", toplist.get(position).getCategoryID());
+        intent.putExtra("type", "category");
+        startActivity(intent);
     }
 }

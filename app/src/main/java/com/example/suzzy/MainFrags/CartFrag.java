@@ -76,7 +76,9 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
     public void onClick(View v) {
     switch (v.getId()){
         case R.id.cart_get_to_parent_cancel:
-            startActivity(new Intent(CartFrag.this, Categories.class));
+            Intent intent = new Intent(CartFrag.this, Categories.class);
+            intent.putExtra("type", "all");
+            startActivity(intent);
             break;
         case R.id.cart_get_to_parent:
             startActivity(new Intent(CartFrag.this, MainActivity.class));

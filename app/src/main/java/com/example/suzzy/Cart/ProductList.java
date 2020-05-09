@@ -3,7 +3,24 @@ package com.example.suzzy.Cart;
 public class ProductList {
     private long price, number, millis;
     private String unit, size, name, id, imageurl, tag, categoryid, desc;
-    boolean loading;
+    boolean loading, isSavedinCart = false, isAddedtoFavourite = false;
+
+    public boolean isSavedinCart() {
+        return isSavedinCart;
+    }
+
+    public void setSavedinCart(boolean savedinCart) {
+        isSavedinCart = savedinCart;
+    }
+
+    public boolean isAddedtoFavourite() {
+        return isAddedtoFavourite;
+    }
+
+    public void setAddedtoFavourite(boolean addedtoFavourite) {
+        isAddedtoFavourite = addedtoFavourite;
+    }
+
     public String getDesc() {
         return desc;
     }

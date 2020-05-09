@@ -21,17 +21,23 @@ import androidx.recyclerview.widget.RecyclerView;
 public class ExploreandShopAdapter extends RecyclerView.Adapter<ExploreandShopAdapter.viewHolder> {
     private Context context;
     private List<ExploreandShopList> toplist;
+    ExploreandShopCardClickListener mlistener;
 
     public ExploreandShopAdapter(Context context, List<ExploreandShopList> toplist) {
         this.context = context;
         this.toplist = toplist;
     }
-
+    public interface  ExploreandShopCardClickListener{
+        void ExploreShopClick(int position);
+    }
+public void setOnExploreandShopClickListener(ExploreandShopCardClickListener listener){
+    this.mlistener = listener;
+}
     @NonNull
     @Override
     public viewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.exploreandshopcardview, parent, false);
-        return new viewHolder(view);
+        return new viewHolder(view, this.mlistener);
     }
 
     @Override
@@ -49,14 +55,22 @@ holder.textView.setText(list.getCategoryname());
         return (toplist != null? toplist.size():0);
     }
 
-    public class viewHolder extends RecyclerView.ViewHolder {
+    public static class viewHolder extends RecyclerView.ViewHolder {
         private SimpleDraweeView imageView;
         private TextView textView;
-        public viewHolder(@NonNull View itemView) {
+        public viewHolder(@NonNull View itemView, final ExploreandShopCardClickListener listener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.category_item_image);
             textView = itemView.findViewById(R.id.category_item_text);
-
+itemView.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+        int position = getAdapterPosition();
+        if(position != RecyclerView.NO_POSITION){
+           listener.ExploreShopClick(position);
+        }
+    }
+});
         }
     }
 }
