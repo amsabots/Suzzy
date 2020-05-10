@@ -42,6 +42,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -212,6 +213,7 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
                         size.setText(product.hasChild("size") ? product.child("size").getValue().toString() : "");
                         unit.setText(product.hasChild("unit") ? "/" + product.child("unit").getValue().toString() : "/unit");
                         desc.setText(product.child("desc").getValue().toString());
+                      cartList = product.getValue(CartList.class);
 
 
                     }
@@ -324,6 +326,8 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
             public void onComplete(@NonNull Task<Void> task) {
                 dialogue.dismiss();
                 if (task.isSuccessful()) {
+                    add_to_cart.setEnabled(false);
+                    add_to_cart.setText("Added to Cart");
                     Snackbar.make(snack, "added to cart", BaseTransientBottomBar.LENGTH_SHORT)
                             .setDuration(500)
                             .show();

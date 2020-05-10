@@ -73,6 +73,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
     Categories_Adapter adapter;
     String type, categoryid;
     ProgressDialog progressDialog;
+    int itemsSize;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -115,6 +116,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
             }
         });
 getUplocation();
+
 
     }
 void getUplocation(){
@@ -170,7 +172,6 @@ void getUplocation(){
           if(dataSnapshot.exists()){
               for (final DataSnapshot item:dataSnapshot.getChildren()
                    ) {
-                  String productid = item.getKey();
                   if(FirebaseAuth.getInstance().getCurrentUser() !=null){
                     Query mref = FirebaseDatabase.getInstance().getReference()
                     .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -179,10 +180,10 @@ void getUplocation(){
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                          if(!dataSnapshot.exists()){
-
                              ProductList productList = item.getValue(ProductList.class);
                              list.add(productList);
                              adapter.notifyDataSetChanged();
+
                          }
                         }
 
@@ -201,7 +202,7 @@ void getUplocation(){
                   }
 
               }
-
+              //updateItemList(list.size());
           }else{
               new MaterialAlertDialogBuilder(Categories.this)
                       .setTitle("OOOOps!!! We are out of stock")
@@ -215,6 +216,8 @@ void getUplocation(){
                       }).setCancelable(false).show();
           }
 
+
+
       }
 
       @Override
@@ -222,18 +225,6 @@ void getUplocation(){
 
       }
   });
-//  if(list.size() == 0){
-//      new MaterialAlertDialogBuilder(Categories.this)
-//              .setTitle("OOOOps!!! We are out of stock")
-//              .setMessage("Seems like the products under this Category are out of stock/n Continue shopping")
-//              .setIcon(R.drawable.ic_info_black_24dp)
-//              .setPositiveButton("Back to Shopping", new DialogInterface.OnClickListener() {
-//                  @Override
-//                  public void onClick(DialogInterface dialog, int which) {
-//                      startActivity(new Intent(Categories.this, MainActivity.class));
-//                  }
-//              }).show();
-//  }
     }
 
 
@@ -285,34 +276,73 @@ saveToUserCart(position);
     }
 
 
-    public void saveToUserCart(int position) {
+    public void saveToUserCart(final int position) {
         list.get(position).setLoading(true);
         adapter.notifyDataSetChanged();
-        DatabaseReference cart = FirebaseDatabase.getInstance().getReference().child("Users")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child("Cart").push();
-        ProductList p = list.get(position);
-        CartList cartList = new CartList(p.getPrice(), 1, System.currentTimeMillis(), p.getUnit(), p.getSize(),
-                p.getName(), p.getId(), p.getImageurl(), p.getTag(), p.getCategoryid(), p.getDesc());
-        cart.setValue(cartList).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Snackbar.make(snack, "added to cart", BaseTransientBottomBar.LENGTH_SHORT)
-                            .setDuration(500)
-                            .show();
-                } else {
-                    Toast.makeText(Categories.this, "Task failed, Please try again", Toast.LENGTH_SHORT).show();
+        if(!list.get(position).isSavedinCart()){
+            DatabaseReference cart = FirebaseDatabase.getInstance().getReference().child("Users")
+                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                    .child("Cart").push();
+            ProductList p = list.get(position);
+            CartList cartList = new CartList(p.getPrice(), 1, System.currentTimeMillis(), p.getUnit(), p.getSize(),
+                    p.getName(), p.getId(), p.getImageurl(), p.getTag(), p.getCategoryid(), p.getDesc());
+            cart.setValue(cartList).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Snackbar.make(snack, "added to cart", BaseTransientBottomBar.LENGTH_SHORT)
+                                .setDuration(500)
+                                .show();
+                        list.remove(position);
+                        adapter.notifyItemRemoved(position);
+                        adapter.notifyItemRangeChanged(position, list.size());
+//                        list.get(position).setSavedinCart(true);
+//                        adapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(Categories.this, "Task failed, Please try again", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Snackbar.make(snack, "Task failed, Please try again", BaseTransientBottomBar.LENGTH_SHORT)
-                        .show();
-            }
-        });
-
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Snackbar.make(snack, "Task failed, Please try again", BaseTransientBottomBar.LENGTH_SHORT)
+                            .show();
+                }
+            });
+        }else{
+            Snackbar.make(snack, "item already in your cart", BaseTransientBottomBar.LENGTH_SHORT)
+                    .setDuration(500)
+                    .show();
+        }
 
     }
+//    void updateItemList(int id){
+//        Log.i(TAG, "updateItemList: list size: "+id);
+//        if(id > 0){
+//            for (int i = 0; i < id; i++){
+//                ProductList checkList = list.get(i);
+//                Query query = FirebaseDatabase.getInstance().getReference()
+//                        .child("Users").child("Cart").orderByChild("id").equalTo(checkList.getId());
+//                final int finalI = i;
+//                query.addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                      if (dataSnapshot.exists()){
+//                          list.get(finalI).setSavedinCart(true);
+//                          adapter.notifyDataSetChanged();
+//                      }else{
+//                          list.get(finalI).setSavedinCart(false);
+//                          adapter.notifyDataSetChanged();
+//                      }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
+//            }
+   //     }
+   // }
+
 }

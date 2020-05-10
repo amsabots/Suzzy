@@ -126,6 +126,37 @@ android:elevation="4dp"
                 android:textColor="@color/colorWhite"
                 android:textSize="11sp"
                 android:textStyle="normal" />
+            <LinearLayout
+                android:id="@+id/product_saved_to_cart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|right"
+                android:layout_marginEnd="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_weight="0.8"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal"
+               android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/cart_item_minus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_done_black_24dp" />
+                <TextView
+                    android:id="@+id/cart_item_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="added to cart"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:textSize="12sp"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_horizontal"
+                    android:textColor="@color/colorAccent"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

@@ -3,6 +3,7 @@ package com.example.suzzy;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.suzzy.ExtrasAdapter.OnboardingAdapter;
+import com.example.suzzy.Preferences.OnBoardingScreen;
 
 public class OnboardingScreen extends AppCompatActivity implements View.OnClickListener {
 private ViewPager mviewPager;
@@ -102,7 +104,10 @@ switch (mcurrentpage){
             mviewPager.setCurrentItem(mcurrentpage-1);
             break;
         case R.id.onboarding_start_shopping:
-            Toast.makeText(this, "welcome to the shopping app. main page under development", Toast.LENGTH_SHORT).show();
+            OnBoardingScreen.getInstance(this).setNew(false);
+           startActivity(new Intent(OnboardingScreen.this, MainActivity.class).addFlags(
+                   Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK
+           ));
             break;
     }
     }

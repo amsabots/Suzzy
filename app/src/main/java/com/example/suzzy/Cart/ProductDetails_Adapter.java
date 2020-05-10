@@ -44,7 +44,7 @@ public void setOnCardClickListener(OnCardItemClickListener listener){
 topItemsList list = mainlist.get(position);
 holder.image.setImageURI(list.getImageurl());
 holder.tag.setText(list.getTag());
-holder.price.setText(String.valueOf(list.getPrice()));
+holder.price.setText("Kshs "+String.valueOf(list.getPrice()));
 holder.name.setText(list.getName());
 holder.tag.setVisibility(list.getTag() != null?View.VISIBLE:View.GONE);
         Drawable yellowtag = ctx.getResources().getDrawable(R.drawable.texttagsyellow);

@@ -1,6 +1,7 @@
 package com.example.suzzy.MainFrags;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,9 +21,11 @@ import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.firebase.ui.database.SnapshotParser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -76,6 +79,29 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
         location = findViewById(R.id.cart_location);
         change_location = findViewById(R.id.cart_change_location);
         setLocation();
+       FirebaseDatabase.getInstance().getReference().child("Users").child(User).child("Cart")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getChildrenCount() < 1){
+                            new MaterialAlertDialogBuilder(CartFrag.this)
+                                    .setTitle("Start Shopping")
+                                    .setMessage("You have nothing in your Cart")
+                                    .setIcon(R.drawable.ic_info_black_24dp)
+                                    .setPositiveButton("Start shopping", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            startActivity(new Intent(CartFrag.this, MainActivity.class));
+                                        }
+                                    }).setCancelable(false).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
     }
 void setLocation(){
     if (FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -205,7 +231,13 @@ void setLocation(){
         query.keepSynced(true);
         //create the adapter
         FirebaseRecyclerOptions<CartList> options = new FirebaseRecyclerOptions.Builder<CartList>()
-                .setQuery(query, CartList.class).build();
+                .setQuery(query, new SnapshotParser<CartList>() {
+                    @NonNull
+                    @Override
+                    public CartList parseSnapshot(@NonNull DataSnapshot snapshot) {
+                      return snapshot.getValue(CartList.class);
+                    }
+                }).build();
         adapter = new FirebaseRecyclerAdapter<CartList, viewHolder>(options) {
 
             @NonNull
@@ -276,6 +308,17 @@ void setLocation(){
 
 
                                     }
+                                }else{
+                                    new MaterialAlertDialogBuilder(CartFrag.this)
+                                            .setTitle("Start Shopping")
+                                            .setMessage("You Cart is empty!!!")
+                                           .setIcon(R.drawable.ic_info_black_24dp)
+                                            .setPositiveButton("Start Shopping", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    startActivity(new Intent(CartFrag.this, MainActivity.class));
+                                                }
+                                            }).setCancelable(false).show();
                                 }
                             }
 

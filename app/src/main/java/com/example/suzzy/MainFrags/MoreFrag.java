@@ -42,11 +42,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
         BottomNavigationView.OnNavigationItemSelectedListener {
-    private TextInputLayout city, residence, phonenumber;
+    private TextInputLayout city, residence, phonenumber, name;
     Button update_contact, update_location;
     TextView open_maps;
     LinearLayout open_accounts, history;
@@ -65,6 +66,7 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
         update_contact.setOnClickListener(this);
         open_maps.setOnClickListener(this);
         open_accounts.setOnClickListener(this);
+        history.setOnClickListener(this);
 
         //initialise firebase class member variables
         if(FirebaseAuth.getInstance().getCurrentUser() !=null) {
@@ -82,16 +84,20 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fragment_more_update_phonenumber:
-                if (!TextUtils.isEmpty(phonenumber.getEditText().getText().toString())) {
+                if (!TextUtils.isEmpty(phonenumber.getEditText().getText().toString()) && !TextUtils
+                .isEmpty(name.getEditText().getText().toString())) {
                     phone_loader.setVisibility(View.VISIBLE);
-                    user.child("phone").setValue(phonenumber.getEditText().getText().toString())
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("phone", phonenumber.getEditText().getText().toString());
+                    params.put("name", name.getEditText().getText().toString());
+
+                    user.updateChildren(params).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         phone_loader.setVisibility(View.GONE);
                                         new MaterialAlertDialogBuilder(MoreFrag.this)
-                                                .setMessage("Phone Number updated successfully")
+                                                .setMessage("Your Info updated successfully")
                                                 .setIcon(R.drawable.ic_done_black_24dp)
                                                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                                                     @Override
@@ -113,11 +119,11 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
                 if(!TextUtils.isEmpty(city.getEditText().getText().toString()) && !TextUtils.
                         isEmpty(residence.getEditText().getText().toString())){
                     address_loader.setVisibility(View.VISIBLE);
-                    HashMap<String, String> params = new HashMap<>();
+                    Map<String, Object> params = new HashMap<>();
                     params.put("residence", residence.getEditText().getText().toString());
                     params.put("city", city.getEditText().getText().toString());
 
-                    user.child("location").setValue(params).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    user.child("location").updateChildren(params).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
@@ -167,6 +173,9 @@ void getAccountDetails(){
               if(dataSnapshot.child("phone").exists()){
                  phonenumber.getEditText().setText(dataSnapshot.child("phone").getValue().toString());
               }
+                if(dataSnapshot.child("name").exists()){
+                    name.getEditText().setText(dataSnapshot.child("name").getValue().toString());
+                }
               if(dataSnapshot.child("location").exists()){
                   city.getEditText().setText(dataSnapshot.child("location").child("city").getValue().toString());
                   residence.getEditText().setText(dataSnapshot.child("location").child("residence").getValue().toString());
@@ -191,6 +200,7 @@ void getAccountDetails(){
         address_loader = findViewById(R.id.spinkit_address);
         phone_loader = findViewById(R.id.spinkit_contact);
         open_maps.setPaintFlags(open_maps.getPaintFlags()|Paint.UNDERLINE_TEXT_FLAG);
+        name = findViewById(R.id.fragment_more_name);
 
 
     }

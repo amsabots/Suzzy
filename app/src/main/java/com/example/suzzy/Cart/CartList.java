@@ -1,7 +1,7 @@
 package com.example.suzzy.Cart;
 
 public class CartList {
-    private long price, number, millis;
+    private long price, number = 1 , millis= System.currentTimeMillis();
     private String unit, size, name, id, imageurl, tag, categoryid, desc;
     boolean loading;
 

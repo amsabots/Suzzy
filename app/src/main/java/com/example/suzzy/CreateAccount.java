@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +49,7 @@ public class CreateAccount extends AppCompatActivity {
                 if(response.isNewUser()){
                     DatabaseReference Users = FirebaseDatabase.getInstance().getReference().child("Users");
                     Users.child(user).child("email").setValue(response.getEmail());
+                    Users.child(user).child("date_created").setValue(ServerValue.TIMESTAMP);
                     startActivity(new Intent(CreateAccount.this, MainActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
                     finish();

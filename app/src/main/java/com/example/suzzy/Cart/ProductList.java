@@ -3,7 +3,7 @@ package com.example.suzzy.Cart;
 public class ProductList {
     private long price, number, millis;
     private String unit, size, name, id, imageurl, tag, categoryid, desc;
-    boolean loading, isSavedinCart = false, isAddedtoFavourite = false;
+    private boolean loading, isSavedinCart = false, isAddedtoFavourite = false;
 
     public boolean isSavedinCart() {
         return isSavedinCart;

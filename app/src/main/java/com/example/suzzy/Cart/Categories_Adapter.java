@@ -63,6 +63,11 @@ public void setOnItemclickListener(OnItemClickListener listener){
                 viewHolder.tag.setBackground(blacktag);
             } else viewHolder.tag.setBackground(yellowtag);
         }
+//        if(model.isSavedinCart()){
+//            viewHolder.product_add_to_cart.setEnabled(false);
+//            viewHolder.product_add_to_cart.setVisibility(View.GONE);
+//            viewHolder.saveTolist.setVisibility(View.VISIBLE);
+//        }
     }
 
     @Override
@@ -83,7 +88,7 @@ public void setOnItemclickListener(OnItemClickListener listener){
             size = itemView.findViewById(R.id.product_size);
             imageview = itemView.findViewById(R.id.product_image);
             product_add_to_cart = itemView.findViewById(R.id.product_add_to_cart);
-            saveTolist = itemView.findViewById(R.id.product_save_to_list);
+            saveTolist = itemView.findViewById(R.id.product_saved_to_cart);
             product_add_to_cart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,8 +26,11 @@ import com.example.suzzy.FragmentListClasses.topItemsList;
 import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainFrags.CartFrag;
 import com.example.suzzy.MainFrags.MoreFrag;
+import com.example.suzzy.Preferences.OnBoardingScreen;
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.github.ybq.android.spinkit.SpinKitView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -66,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     CoordinatorLayout mainsnack;
     TextView location, change_location;
     private static final String TAG = "MainActivity";
+    LinearLayout loader;
+    SpinKitView loading;
+    MaterialButton reload;
 
 
     @Override
@@ -76,11 +83,16 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         mDatabase = FirebaseDatabase.getInstance().getReference();
         //end of firebase settings call
         //view initialisers
+        if(OnBoardingScreen.getInstance(this).isNew()){
+            startActivity(new Intent(this, OnboardingScreen.class));
+        }
         initExploreandShop();
         initTopCategory();
         initTopItems();
         //view initialisation
-
+        loader = findViewById(R.id.loading_screen);
+        loading = findViewById(R.id.main_activity_loader);
+        reload = findViewById(R.id.main_activity_refresh);
         //data loading functions and handlers
         LoadExploreandShopData();
         LoadtopItemsList();
@@ -91,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         change_location = findViewById(R.id.main_change_location);
         location = findViewById(R.id.main_location);
         //set default location in main toolbar
-
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
             DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
@@ -184,11 +195,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     void LoadExploreandShopData() {
+        loader.setVisibility(View.VISIBLE);
         DatabaseReference category = mDatabase.child("category");
         category.keepSynced(true);
         category.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                loader.setVisibility(View.GONE);
                 toplist.clear();
                 categoryList.clear();
                 for (DataSnapshot category : dataSnapshot.getChildren()
@@ -208,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+                loader.setVisibility(View.GONE);
                 //Snackbar.make(snackbar, databaseError.getMessage(), BaseTransientBottomBar.LENGTH_SHORT).show();
             }
         });
