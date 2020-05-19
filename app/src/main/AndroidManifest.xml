@@ -14,7 +14,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+        android:name=".Suzzy">
         <activity android:name=".Cart.Product_Details" android:parentActivityName=".Cart.Categories"/>
         <activity
             android:name=".MoreOptions.Maps"

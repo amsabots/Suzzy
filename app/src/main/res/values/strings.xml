@@ -16,5 +16,12 @@
         submitted will be preserved. You can always come next time</string>
     <string name="delete">All search history, Account email, Cart info and history and payment and location information will be deleted.\nYou cannot recover</string>
     <string name="toolbar_header">Suzan`s Shop</string>
+    <string name="select_payment_method">Select payment method</string>
+    <string name="mpesa">Payment via MPESA</string>
+    <string name="ondelivery">Payment on Delivery</string>
+    <string name="explain_on_delivery">Payment for ordered items is is done immediately the person delivering the goods avails the items
+        ordered to you. Before payment, check the status of your items for any damages. Also make sure you confirm the rider vehicle registration.</string>
+    <string name="explain_mpesa">Pay the total amount shown above and proceed to confirm your order, Your payment will be confirmed in less than 5 mins
+        and the goods should be on transit to  your specified location. Remember you cannot delete an order after packaging and delivery in progress has been confirmed</string>
 
 </resources>

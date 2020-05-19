@@ -1,5 +1,6 @@
 package com.example.suzzy.MainFrags;
 
+
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import com.example.suzzy.Cart.CartList;
 import com.example.suzzy.Cart.Categories;
 import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainActivity;
+import com.example.suzzy.Payment;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -40,10 +42,8 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 
 public class CartFrag extends AppCompatActivity implements  View.OnClickListener{
     private RecyclerView recyclerView;
@@ -73,6 +73,7 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
         cancel_back = findViewById(R.id.cart_get_to_parent_cancel);
         arro_back.setOnClickListener(this);
         cancel_back.setOnClickListener(this);
+        checkout.setOnClickListener(this);
         User = FirebaseAuth.getInstance()
                 .getCurrentUser().getUid();
         getSubtotal(User);
@@ -145,6 +146,11 @@ void setLocation(){
         case R.id.cart_get_to_parent:
             startActivity(new Intent(CartFrag.this, MainActivity.class));
             break;
+        case R.id.proceed_to_checkout_button:
+            Payment payment = Payment.newInstace();
+            payment.show(getSupportFragmentManager(), "Payment");
+            break;
+
     }
     }
 
