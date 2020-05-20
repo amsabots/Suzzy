@@ -84,8 +84,10 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fragment_more_update_phonenumber:
-                if (!TextUtils.isEmpty(phonenumber.getEditText().getText().toString()) && !TextUtils
-                .isEmpty(name.getEditText().getText().toString())) {
+                String yourname = name.getEditText().getText().toString();
+                String number = phonenumber.getEditText().getText().toString();
+                if (!TextUtils.isEmpty(number) && !TextUtils
+                .isEmpty(yourname) && number.matches("^07\\d{8}$")) {
                     phone_loader.setVisibility(View.VISIBLE);
                     Map<String, Object> params = new HashMap<>();
                     params.put("phone", phonenumber.getEditText().getText().toString());
@@ -112,7 +114,7 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
                                 }
                             });
                 } else {
-                    Toast.makeText(MoreFrag.this, "Fill the phone number field", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MoreFrag.this, "Fill both fields and make sure the Phonenumber follows the pattern shown", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.fragment_more_update_address:
@@ -221,4 +223,5 @@ void getAccountDetails(){
         }
         return false;
     }
+
 }

@@ -22,7 +22,7 @@
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".MoreOptions.History"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".MainFrags.MoreFrag" />
         <activity
             android:name=".MoreOptions.Account"
             android:parentActivityName=".MainFrags.MoreFrag" />

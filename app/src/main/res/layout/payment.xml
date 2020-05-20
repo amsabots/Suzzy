@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -126,7 +127,7 @@
                 android:textStyle="normal" />
 
             <TextView
-                android:id="@+id/textView9"
+                android:id="@+id/checkout_subtotal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_medium"
@@ -139,6 +140,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
+        android:id="@+id/linearLayout4"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -149,30 +151,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/materialCardView">
 
-        <TextView
-            android:id="@+id/textView11"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Select payment method"
-            android:textAllCaps="true"
-            android:textColor="@color/colorAccent" />
-        <RadioGroup
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checkedButton="@+id/payment_on_delivery"
-            android:orientation="vertical">
-            <RadioButton
-                android:id="@+id/payment_on_delivery"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/ondelivery" />
-            <RadioButton
-                android:id="@+id/payment_via_mpesa"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/mpesa"/>
-        </RadioGroup>
-
         <ImageView
             android:id="@+id/toggle_explanations"
             android:layout_width="wrap_content"
@@ -181,6 +159,32 @@
             android:layout_margin="@dimen/margin_small"
             android:src="@drawable/ic_keyboard_arrow_down_black_24dp" />
 
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select payment method"
+            android:textAllCaps="true"
+            android:textColor="@color/colorAccent" />
+        <RadioGroup
+            android:id="@+id/checkout_radiogroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checkedButton="@+id/payment_on_delivery"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/payment_on_delivery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ondelivery" />
+
+            <RadioButton
+                android:id="@+id/payment_via_mpesa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mpesa" />
+        </RadioGroup>
         <LinearLayout
             android:id="@+id/checkout_toggle_explanation_view"
             android:layout_width="match_parent"
@@ -203,7 +207,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small"
                 android:text="@string/explain_on_delivery" />
-
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.7dp"
+                android:layout_marginBottom="@dimen/margin_medium"
+                android:layout_marginTop="@dimen/margin_medium"
+                android:background="@color/colorAccent" />
             <TextView
                 android:id="@+id/toggle_mpesa"
                 android:layout_width="match_parent"
@@ -224,10 +233,40 @@
                 android:layout_marginBottom="@dimen/margin_medium"
                 android:layout_marginTop="@dimen/margin_medium"
                 android:background="@color/colorAccent" />
+
         </LinearLayout>
     </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/checkout_commit_changes"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:width="1.1dp"
+        android:text="Commit Order"
+        android:textColor="@color/colorAccent"
+        app:cornerRadius="6dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linearLayout4"
+        app:strokeColor="@color/colorAccent" />
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/cartfrag_snackbar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

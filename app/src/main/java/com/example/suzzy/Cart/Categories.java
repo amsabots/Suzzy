@@ -277,6 +277,8 @@ saveToUserCart(position);
 
 
     public void saveToUserCart(final int position) {
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
         list.get(position).setLoading(true);
         adapter.notifyDataSetChanged();
         if(!list.get(position).isSavedinCart()){
@@ -290,6 +292,7 @@ saveToUserCart(position);
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
+                        progressDialog.dismiss();
                         Snackbar.make(snack, "added to cart", BaseTransientBottomBar.LENGTH_SHORT)
                                 .setDuration(500)
                                 .show();
@@ -299,17 +302,20 @@ saveToUserCart(position);
 //                        list.get(position).setSavedinCart(true);
 //                        adapter.notifyDataSetChanged();
                     } else {
+                        progressDialog.dismiss();
                         Toast.makeText(Categories.this, "Task failed, Please try again", Toast.LENGTH_SHORT).show();
                     }
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
+                    progressDialog.dismiss();
                     Snackbar.make(snack, "Task failed, Please try again", BaseTransientBottomBar.LENGTH_SHORT)
                             .show();
                 }
             });
         }else{
+            progressDialog.dismiss();
             Snackbar.make(snack, "item already in your cart", BaseTransientBottomBar.LENGTH_SHORT)
                     .setDuration(500)
                     .show();

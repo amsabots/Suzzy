@@ -3,6 +3,8 @@ package com.example.suzzy.GeneralClasses;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Paint;
+import android.widget.TextView;
 
 import com.example.suzzy.CreateAccount;
 import com.example.suzzy.MainFrags.MoreFrag;
@@ -60,5 +62,8 @@ public class General {
     }
     public void openEditLocation(Context context){
      context.startActivity(new Intent(context, MoreFrag.class));
+    }
+    public static void underLineTextview(TextView textview){
+textview.setPaintFlags(textview.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
     }
 }

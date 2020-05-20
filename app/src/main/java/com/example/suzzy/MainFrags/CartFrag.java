@@ -18,6 +18,7 @@ import com.example.suzzy.Cart.CartList;
 import com.example.suzzy.Cart.Categories;
 import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainActivity;
+import com.example.suzzy.MoreOptions.History;
 import com.example.suzzy.Payment;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -45,17 +46,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class CartFrag extends AppCompatActivity implements  View.OnClickListener{
+public class CartFrag extends AppCompatActivity implements  View.OnClickListener, Payment.SendDataBackToHostingActivity{
     private RecyclerView recyclerView;
     private ProgressDialog progressDialog;
     FirebaseRecyclerAdapter adapter;
-    String User;
+    String User, dataListener;
     List<CartList> list;
     TextView subTotal, location, change_location;
     Button checkout;
     BottomNavigationView bottomNavigationView;
     ImageView arro_back, cancel_back;
     private static final String TAG = "CartFrag";
+    public static final String SUB_TOTALCOST = "nothing in my head right now";
+    public static final String TOTAL_ITEMS = "can be many, can be none but who cares";
+    long items = 0, subtotal;
 
 
     @Override
@@ -84,17 +88,23 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                         if(dataSnapshot.getChildrenCount() < 1){
-                            new MaterialAlertDialogBuilder(CartFrag.this)
-                                    .setTitle("Start Shopping")
-                                    .setMessage("You have nothing in your Cart")
-                                    .setIcon(R.drawable.ic_info_black_24dp)
-                                    .setPositiveButton("Start shopping", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            startActivity(new Intent(CartFrag.this, MainActivity.class));
-                                        }
-                                    }).setCancelable(false).show();
+                            if(dataListener == null){
+                                new MaterialAlertDialogBuilder(CartFrag.this)
+                                        .setTitle("Start Shopping")
+                                        .setMessage("You have nothing in your Cart")
+                                        .setIcon(R.drawable.ic_info_black_24dp)
+                                        .setPositiveButton("Start shopping", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                startActivity(new Intent(CartFrag.this, MainActivity.class));
+                                            }
+                                        }).setCancelable(false).show();
+                            }
+
+                        }else{
+                          items = dataSnapshot.getChildrenCount();
                         }
                     }
 
@@ -147,11 +157,34 @@ void setLocation(){
             startActivity(new Intent(CartFrag.this, MainActivity.class));
             break;
         case R.id.proceed_to_checkout_button:
+            Bundle bundle = new Bundle();
+            bundle.putString(SUB_TOTALCOST, subTotal.getText().toString());
+            bundle.putLong(TOTAL_ITEMS, items);
             Payment payment = Payment.newInstace();
+            payment.setArguments(bundle);
             payment.show(getSupportFragmentManager(), "Payment");
             break;
 
     }
+    }
+
+    @Override
+    public void dataAttached(String data) {
+        dataListener = data;
+        new MaterialAlertDialogBuilder(CartFrag.this)
+                .setMessage("Your order has been submitted successfully, Proceed to " +
+                        "activity history to track the status of your package")
+                .setIcon(R.drawable.ic_info_black_24dp)
+                .setPositiveButton("Track Package", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(CartFrag.this, History.class));
+                    }
+                }).setCancelable(false)
+                .show();
+        FirebaseDatabase.getInstance().getReference().child("Users").child(User)
+                .child("Cart")
+                .removeValue();
     }
 
 
@@ -315,16 +348,17 @@ void setLocation(){
 
                                     }
                                 }else{
-                                    new MaterialAlertDialogBuilder(CartFrag.this)
-                                            .setTitle("Start Shopping")
-                                            .setMessage("You Cart is empty!!!")
-                                           .setIcon(R.drawable.ic_info_black_24dp)
-                                            .setPositiveButton("Start Shopping", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    startActivity(new Intent(CartFrag.this, MainActivity.class));
-                                                }
-                                            }).setCancelable(false).show();
+                                       new MaterialAlertDialogBuilder(CartFrag.this)
+                                               .setTitle("Start Shopping")
+                                               .setMessage("You Cart is empty!!!")
+                                               .setIcon(R.drawable.ic_info_black_24dp)
+                                               .setPositiveButton("Start Shopping", new DialogInterface.OnClickListener() {
+                                                   @Override
+                                                   public void onClick(DialogInterface dialog, int which) {
+                                                       startActivity(new Intent(CartFrag.this, MainActivity.class));
+                                                   }
+                                               }).setCancelable(false).show();
+
                                 }
                             }
 
@@ -429,6 +463,7 @@ void setLocation(){
                         long number = items.child("number").getValue(Long.class);
                         total += (price * number);
                         subTotal.setText("Sub Total: Ksh " + total);
+                        subtotal = total;
                     }
                 } else subTotal.setText("Sub Total: Ksh 0");
             }
