@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +47,7 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -73,6 +75,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     LinearLayout loader;
     SpinKitView loading;
     MaterialButton reload;
+    public static final String CATEGORY_ID = "i was sooo dumb back there";
+    public static final String ITEM_ID = "then i learnt something";
+    public static final String CATEGORY_TYPE = "that Java sometimes sucks";
+    public static final String ITEM_NAME = "just keeping up with quarentine";
+   EditText searchView;
 
 
     @Override
@@ -110,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             mref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
+                    if (dataSnapshot.child("location").hasChild("city")) {
                        location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
                                dataSnapshot.child("city").getValue().toString());
                         Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
@@ -132,8 +139,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
              else new General().openEditLocation(MainActivity.this);
             }
         });
-
-
+searchView = findViewById(R.id.main_searchview);
+searchView.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+startActivity(new Intent(MainActivity.this, Search.class));
+    }
+});
     }
 
     private void initExploreandShop() {
@@ -180,11 +192,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 for (DataSnapshot product:dataSnapshot.getChildren()
                 ) {
                     if(product.child("topitem").exists()){
-                        topItemsList list = product.getValue(topItemsList.class);
-                        topItemsLists.add(list);
-                        itemsAdapter.notifyDataSetChanged();
+                        if(product.child("topitem").getValue(Boolean.class)){
+                            topItemsList list = product.getValue(topItemsList.class);
+                            topItemsLists.add(list);
+                            itemsAdapter.notifyDataSetChanged();
+                        }
+
                     }
                 }
+
             }
 
             @Override
@@ -211,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     toplist.add(exploreandShopList);
                     adapter.notifyDataSetChanged();
 
-                    if (category.child("topcategory").exists()) {
+                    if (category.child("topcategory").getValue(Boolean.class)) {
                         topCategoryList list = category.getValue(com.example.suzzy.FragmentListClasses.topCategoryList.class);
                         categoryList.add(list);
                         categoryAdapter.notifyDataSetChanged();
@@ -266,26 +282,29 @@ public static boolean isLogged(){
 
     @Override
     public void onTopItemClick(int position) {
-        Intent intent = new Intent(MainActivity.this,Product_Details.class);
-        intent.putExtra("category", topItemsLists.get(position).getCategoryid());
-        intent.putExtra("item", topItemsLists.get(position).getId());
+        Intent intent = new Intent(MainActivity.this,Categories.class);
+        intent.putExtra(CATEGORY_ID, topItemsLists.get(position).getCategoryid());
+        intent.putExtra(CATEGORY_TYPE,"item");
+        intent.putExtra(ITEM_ID, topItemsLists.get(position).getId());
+        intent.putExtra(ITEM_NAME, topItemsLists.get(position).getName());
         startActivity(intent);
 
     }
 
     @Override
     public void onCategoryCardClick(int position) {
+        Log.i(TAG, "onCategoryCardClick: "+categoryList.get(position).getCategoryID());
         Intent intent = new Intent(MainActivity.this, Categories.class);
-        intent.putExtra("categoryid", categoryList.get(position).getCategoryID());
-        intent.putExtra("type", "category");
+        intent.putExtra(CATEGORY_ID,categoryList.get(position).getCategoryID());
+        intent.putExtra(CATEGORY_TYPE, "category");
         startActivity(intent);
     }
 
     @Override
     public void ExploreShopClick(int position) {
         Intent intent = new Intent(MainActivity.this, Categories.class);
-        intent.putExtra("categoryid", toplist.get(position).getCategoryID());
-        intent.putExtra("type", "category");
+        intent.putExtra(CATEGORY_ID, toplist.get(position).getCategoryID());
+        intent.putExtra(CATEGORY_TYPE, "category");
         startActivity(intent);
     }
 }

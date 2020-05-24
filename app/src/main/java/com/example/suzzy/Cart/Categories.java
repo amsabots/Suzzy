@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,9 +22,11 @@ import android.widget.Toast;
 
 import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.InterfaceMethods.IfireBase;
+import com.example.suzzy.ItemFilter;
 import com.example.suzzy.MainActivity;
 import com.example.suzzy.MainFrags.CartFrag;
 import com.example.suzzy.R;
+import com.example.suzzy.Search;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -39,6 +42,9 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -49,6 +55,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -59,6 +68,11 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import static com.example.suzzy.MainActivity.CATEGORY_ID;
+import static com.example.suzzy.MainActivity.CATEGORY_TYPE;
+import static com.example.suzzy.MainActivity.ITEM_ID;
+import static com.example.suzzy.MainActivity.ITEM_NAME;
 
 
 public class Categories extends AppCompatActivity implements Categories_Adapter.OnItemClickListener {
@@ -71,9 +85,10 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
     FrameLayout cart_icon_custom;
     CoordinatorLayout snack;
     Categories_Adapter adapter;
-    String type, categoryid;
+    String type, categoryid, id;
     ProgressDialog progressDialog;
     int itemsSize;
+    EditText search;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,8 +96,9 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
         setContentView(R.layout.activity_categories);
         list = new ArrayList<>();
         adapter = new Categories_Adapter(list, this);
-        type = getIntent().getStringExtra("type");
-        categoryid = getIntent().getStringExtra("categoryid");
+        //Log.i(TAG, "onCreate: " + getIntent().getStringExtra("category") + getIntent().getStringExtra("category_id"));
+           type = getIntent().getStringExtra(CATEGORY_TYPE);
+           categoryid = getIntent().getStringExtra(CATEGORY_ID);
         productsRecyclerv = findViewById(R.id.category_list_recyclerview);
         productsRecyclerv.setHasFixedSize(true);
         productsRecyclerv.setAdapter(adapter);
@@ -96,10 +112,10 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
         cart_icon_custom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                        startActivity(new Intent(Categories.this, CartFrag.class));
-                    } else new General().openAccountCreation(Categories.this);
-                }
+                if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                    startActivity(new Intent(Categories.this, CartFrag.class));
+                } else new General().openAccountCreation(Categories.this);
+            }
         });
         snack = findViewById(R.id.category_snack);
         LoadData(type, categoryid);
@@ -115,116 +131,159 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
                 new General().openEditLocation(Categories.this);
             }
         });
-getUplocation();
+        getUplocation();
 
-
-    }
-void getUplocation(){
-    if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-        String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
-                .child(USERID).child("location");
-        mref.addListenerForSingleValueEvent(new ValueEventListener() {
+        search = findViewById(R.id.category_search);
+        search.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
-                            dataSnapshot.child("city").getValue().toString());
-                    Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
-                }else  location.setText("Not set");
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                location.setText("Not set");
+            public void onClick(View v) {
+                startActivity(new Intent(Categories.this, Search.class));
             }
         });
-    }  location.setText("Not set");
-    //end of location fetching
+    }
 
-    change_location.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if(FirebaseAuth.getInstance().getCurrentUser() == null) new General().openEditLocation(Categories.this);
-            else new General().openEditLocation(Categories.this);
+    void getUplocation() {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
+                    .child(USERID).child("location");
+            mref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.child("location").hasChild("city")) {
+                        location.setText(dataSnapshot.child("residence").getValue().toString() + ", " +
+                                dataSnapshot.child("city").getValue().toString());
+                        Log.i(TAG, "onCreate: Location " + dataSnapshot.toString());
+                    } else location.setText("Not set");
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    location.setText("Not set");
+                }
+            });
         }
-    });
-}
+        location.setText("Not set");
+        //end of location fetching
+
+        change_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (FirebaseAuth.getInstance().getCurrentUser() == null)
+                    new General().openEditLocation(Categories.this);
+                else new General().openEditLocation(Categories.this);
+            }
+        });
+    }
 
 
-    private void LoadData(String type, String categoryid) {
+    private void LoadData(final String type, String categoryid) {
         progressDialog.setMessage("Please wait.........");
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.show();
         Query mainref = null;
-        if(type.equals("all")){
+        if (type.equals("all")) {
+            Log.i(TAG, "LoadData: CATEGORY_TYPE IS ALL");
             mainref = FirebaseDatabase.getInstance().getReference().child("products");
-        }else {
+        } else {
+            Log.i(TAG, "LoadData: CATEGORY_TYPE IS CATEGORISED");
             mainref = FirebaseDatabase.getInstance().getReference().child("products")
                     .orderByChild("categoryid").equalTo(categoryid);
         }
-  mainref.keepSynced(true);
+        mainref.keepSynced(true);
 
-  mainref.addValueEventListener(new ValueEventListener() {
-      @Override
-      public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-          progressDialog.dismiss();
-          if(dataSnapshot.exists()){
-              for (final DataSnapshot item:dataSnapshot.getChildren()
-                   ) {
-                  if(FirebaseAuth.getInstance().getCurrentUser() !=null){
-                    Query mref = FirebaseDatabase.getInstance().getReference()
-                    .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                            .child("Cart").orderByChild("id").equalTo(item.child("id").getValue().toString());
-                    mref.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                         if(!dataSnapshot.exists()){
-                             ProductList productList = item.getValue(ProductList.class);
-                             list.add(productList);
-                             adapter.notifyDataSetChanged();
+        mainref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                progressDialog.dismiss();
+                if (dataSnapshot.exists()) {
+                    for (final DataSnapshot item : dataSnapshot.getChildren()
+                    ) {
+                        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                            Query mref = FirebaseDatabase.getInstance().getReference()
+                                    .child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child("Cart").orderByChild("id").equalTo(item.child("id").getValue().toString());
+                            mref.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (!dataSnapshot.exists()) {
+                                        if (!type.equals("item")) {
+                                            ProductList productList = item.getValue(ProductList.class);
+                                            list.add(productList);
+                                            adapter.notifyDataSetChanged();
+                                        }else{
+                                            ProductList productList = item.getValue(ProductList.class);
+                                            list.add(productList);
+                                             List<ProductList> filteredList = Lists.newArrayList(Collections2.filter(list,
+                                                     new ItemFilter(getIntent()
+                                                             .getStringExtra(ITEM_NAME).toLowerCase())));
+                                             list.clear();
+                                             list.addAll(filteredList);
+                                             adapter.notifyDataSetChanged();
+                                        }
+                                    }
+                                }
 
-                         }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    if (!type.equals("item")) {
+                                        ProductList productList = item.getValue(ProductList.class);
+                                        list.add(productList);
+                                        adapter.notifyDataSetChanged();
+                                    } else{
+                                        ProductList productList = item.getValue(ProductList.class);
+                                        list.add(productList);
+                                        List<ProductList> filteredList = Lists.newArrayList(Collections2.filter(list,
+                                                new ItemFilter(getIntent()
+                                                        .getStringExtra(ITEM_NAME).toLowerCase())));
+                                        list.clear();
+                                        list.addAll(filteredList);
+                                        adapter.notifyDataSetChanged();
+                                    }
+
+
+                                }
+                            });
+
+                        } else {
+                            if(!type.equals("item")) {
+                                ProductList productList = item.getValue(ProductList.class);
+                                list.add(productList);
+                                adapter.notifyDataSetChanged();
+                            }else{
+                                ProductList productList = item.getValue(ProductList.class);
+                                list.add(productList);
+                                List<ProductList> filteredList = Lists.newArrayList(Collections2.filter(list,
+                                        new ItemFilter(getIntent()
+                                                .getStringExtra(ITEM_NAME).toLowerCase())));
+                                list.clear();
+                                list.addAll(filteredList);
+                                adapter.notifyDataSetChanged();
+                            }
                         }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            ProductList productList = item.getValue(ProductList.class);
-                            list.add(productList);
-                            adapter.notifyDataSetChanged();
-                        }
-                    });
-
-                  }else{
-                  ProductList productList = item.getValue(ProductList.class);
-                  list.add(productList);
-                  adapter.notifyDataSetChanged();
-                  }
-
-              }
-              //updateItemList(list.size());
-          }else{
-              new MaterialAlertDialogBuilder(Categories.this)
-                      .setTitle("OOOOps!!! We are out of stock")
-                      .setMessage("Seems like the products under this Category are out of stock/n Continue shopping")
-                      .setIcon(R.drawable.ic_info_black_24dp)
-                      .setPositiveButton("Back to Shopping", new DialogInterface.OnClickListener() {
-                          @Override
-                          public void onClick(DialogInterface dialog, int which) {
-                           startActivity(new Intent(Categories.this, MainActivity.class));
-                          }
-                      }).setCancelable(false).show();
-          }
+                    }
+                } else {
+                    new MaterialAlertDialogBuilder(Categories.this)
+                            .setTitle("OOOOps!!! We are out of stock")
+                            .setMessage("Seems like the products under this Category are out of stock/n Continue shopping")
+                            .setIcon(R.drawable.ic_info_black_24dp)
+                            .setPositiveButton("Back to Shopping", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    startActivity(new Intent(Categories.this, MainActivity.class));
+                                }
+                            }).setCancelable(false).show();
+                }
 
 
+            }
 
-      }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-      @Override
-      public void onCancelled(@NonNull DatabaseError databaseError) {
-
-      }
-  });
+            }
+        });
     }
 
 
@@ -238,7 +297,7 @@ void getUplocation(){
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     count = dataSnapshot.getChildrenCount();
-                    Log.d(TAG, "onDataChange: "+String.valueOf(count));
+                    Log.d(TAG, "onDataChange: " + String.valueOf(count));
                     textCartItemCount.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
                     textCartItemCount.setText(String.valueOf(count));
                 }
@@ -251,12 +310,6 @@ void getUplocation(){
         }
 
     }
-
-    @Override
-    public void onBackPressed() {
-        startActivity(new Intent(Categories.this, MainActivity.class));
-    }
-
     @Override
     public void onLikedClikcked(int position) {
 
@@ -264,12 +317,12 @@ void getUplocation(){
 
     @Override
     public void onAddItemClicked(int position) {
-saveToUserCart(position);
+        saveToUserCart(position);
     }
 
     @Override
     public void openDetailsClicked(int position) {
-        Intent intent = new Intent(Categories.this,Product_Details.class);
+        Intent intent = new Intent(Categories.this, Product_Details.class);
         intent.putExtra("category", list.get(position).getCategoryid());
         intent.putExtra("item", list.get(position).getId());
         startActivity(intent);
@@ -281,7 +334,7 @@ saveToUserCart(position);
         progressDialog.show();
         list.get(position).setLoading(true);
         adapter.notifyDataSetChanged();
-        if(!list.get(position).isSavedinCart()){
+        if (!list.get(position).isSavedinCart()) {
             DatabaseReference cart = FirebaseDatabase.getInstance().getReference().child("Users")
                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                     .child("Cart").push();
@@ -314,7 +367,7 @@ saveToUserCart(position);
                             .show();
                 }
             });
-        }else{
+        } else {
             progressDialog.dismiss();
             Snackbar.make(snack, "item already in your cart", BaseTransientBottomBar.LENGTH_SHORT)
                     .setDuration(500)
@@ -322,6 +375,8 @@ saveToUserCart(position);
         }
 
     }
+
+
 //    void updateItemList(int id){
 //        Log.i(TAG, "updateItemList: list size: "+id);
 //        if(id > 0){
@@ -348,7 +403,7 @@ saveToUserCart(position);
 //                    }
 //                });
 //            }
-   //     }
-   // }
+    //     }
+    // }
 
 }

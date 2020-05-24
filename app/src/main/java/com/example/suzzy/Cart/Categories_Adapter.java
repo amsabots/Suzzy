@@ -2,9 +2,11 @@ package com.example.suzzy.Cart;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -50,7 +53,7 @@ public void setOnItemclickListener(OnItemClickListener listener){
         viewHolder.name.setText(model.getName());
         viewHolder.price.setText("Kshs " + Long.toString(model.getPrice()) + "/");
         viewHolder.size.setText(model.getSize());
-        viewHolder.tag.setVisibility(model.getTag() != null ? View.VISIBLE : View.GONE);
+        viewHolder.tag.setVisibility(!TextUtils.isEmpty(model.getTag()) ? View.VISIBLE : View.GONE);
         viewHolder.size.setVisibility(model.getSize() != null ? View.VISIBLE : View.GONE);
         viewHolder.tag.setText(model.getTag());
         viewHolder.unit.setText(model.getUnit());
@@ -58,7 +61,7 @@ public void setOnItemclickListener(OnItemClickListener listener){
         Drawable blacktag = context.getResources().getDrawable(R.drawable.texttags);
         yellowtag.mutate();
         blacktag.mutate();
-        if(model.getTag() != null) {
+        if(!TextUtils.isEmpty(model.getTag())) {
             if (model.getTag().toLowerCase().indexOf("express".toLowerCase()) != -1) {
                 viewHolder.tag.setBackground(blacktag);
             } else viewHolder.tag.setBackground(yellowtag);
@@ -114,4 +117,5 @@ public void setOnItemclickListener(OnItemClickListener listener){
         }
 
     }
+
 }

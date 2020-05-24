@@ -1,5 +1,6 @@
 package com.example.suzzy.MainFrags;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,8 +29,11 @@ import com.example.suzzy.MainActivity;
 import com.example.suzzy.MoreOptions.Account;
 import com.example.suzzy.MoreOptions.History;
 import com.example.suzzy.MoreOptions.Maps;
+import com.example.suzzy.MoreOptions.MapsActivity;
 import com.example.suzzy.R;
 import com.github.ybq.android.spinkit.SpinKitView;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -55,6 +60,8 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
     DatabaseReference user;
     SpinKitView address_loader, phone_loader;
     BottomNavigationView bottomNavigationView;
+    private static final String TAG = "MoreFrag";
+    private static  final int ERROR_REQUEST_CODE = 1000;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,76 +87,109 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
         bottomNavigationView.getMenu().findItem(R.id.bottom_nav_more).setChecked(true);
 
     }
+
+    private boolean isGoggleServicesOk(){
+        Log.i(TAG, "isGoggleServicesOk: Checking google play services version.....");
+        int available = GoogleApiAvailability.getInstance()
+                .isGooglePlayServicesAvailable(MoreFrag.this);
+        if(available == ConnectionResult.SUCCESS){
+            //play services are okay
+            Log.i(TAG, "isGoggleServicesOk: google play services is working");
+            return true;
+
+        }else if(GoogleApiAvailability.getInstance().isUserResolvableError(available)){
+            //version issue but fixable issue
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(MoreFrag.this,
+                    available, ERROR_REQUEST_CODE);
+            dialog.show();
+        }
+        else Toast.makeText(this, "Your Device does not support Map Requests", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fragment_more_update_phonenumber:
-                String yourname = name.getEditText().getText().toString();
-                String number = phonenumber.getEditText().getText().toString();
-                if (!TextUtils.isEmpty(number) && !TextUtils
-                .isEmpty(yourname) && number.matches("^07\\d{8}$")) {
-                    phone_loader.setVisibility(View.VISIBLE);
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("phone", phonenumber.getEditText().getText().toString());
-                    params.put("name", name.getEditText().getText().toString());
+                if(FirebaseAuth.getInstance().getCurrentUser() == null){
+                  new General().openAccountCreation(MoreFrag.this);
+                }else {
+                    String yourname = name.getEditText().getText().toString();
+                    String number = phonenumber.getEditText().getText().toString();
+                    if (!TextUtils.isEmpty(number) && !TextUtils
+                            .isEmpty(yourname) && number.matches("^07\\d{8}$")) {
+                        phone_loader.setVisibility(View.VISIBLE);
+                        Map<String, Object> params = new HashMap<>();
+                        params.put("phone", phonenumber.getEditText().getText().toString());
+                        params.put("name", name.getEditText().getText().toString());
 
-                    user.updateChildren(params).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        phone_loader.setVisibility(View.GONE);
-                                        new MaterialAlertDialogBuilder(MoreFrag.this)
-                                                .setMessage("Your Info updated successfully")
-                                                .setIcon(R.drawable.ic_done_black_24dp)
-                                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                        dialog.dismiss();
-                                                    }
-                                                }).show();
-                                    } else {
-                                        phone_loader.setVisibility(View.GONE);
-                                        Toast.makeText(MoreFrag.this, "Failed! Please try again", Toast.LENGTH_SHORT).show();
-                                    }
+                        user.updateChildren(params).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    phone_loader.setVisibility(View.GONE);
+                                    new MaterialAlertDialogBuilder(MoreFrag.this)
+                                            .setMessage("Your Info updated successfully")
+                                            .setIcon(R.drawable.ic_done_black_24dp)
+                                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                }
+                                            }).show();
+                                } else {
+                                    phone_loader.setVisibility(View.GONE);
+                                    Toast.makeText(MoreFrag.this, "Failed! Please try again", Toast.LENGTH_SHORT).show();
                                 }
-                            });
-                } else {
-                    Toast.makeText(MoreFrag.this, "Fill both fields and make sure the Phonenumber follows the pattern shown", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        Toast.makeText(MoreFrag.this, "Fill both fields and make sure the Phonenumber follows the pattern shown", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 break;
             case R.id.fragment_more_update_address:
-                if(!TextUtils.isEmpty(city.getEditText().getText().toString()) && !TextUtils.
-                        isEmpty(residence.getEditText().getText().toString())){
-                    address_loader.setVisibility(View.VISIBLE);
-                    Map<String, Object> params = new HashMap<>();
-                    params.put("residence", residence.getEditText().getText().toString());
-                    params.put("city", city.getEditText().getText().toString());
+                if(FirebaseAuth.getInstance().getCurrentUser() == null){
+                    new General().openAccountCreation(MoreFrag.this);
+                }else {
+                    if (!TextUtils.isEmpty(city.getEditText().getText().toString()) && !TextUtils.
+                            isEmpty(residence.getEditText().getText().toString())) {
+                        address_loader.setVisibility(View.VISIBLE);
+                        Map<String, Object> params = new HashMap<>();
+                        params.put("residence", residence.getEditText().getText().toString());
+                        params.put("city", city.getEditText().getText().toString());
 
-                    user.child("location").updateChildren(params).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                               address_loader.setVisibility(View.GONE);
-                                new MaterialAlertDialogBuilder(MoreFrag.this)
-                                        .setMessage("Delivery address has been set up and updated successfully")
-                                        .setIcon(R.drawable.ic_done_black_24dp)
-                                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                            }
-                                        }).show();
-                            } else {
-                                address_loader.setVisibility(View.GONE);
-                                Toast.makeText(MoreFrag.this, "Failed! Please try again", Toast.LENGTH_SHORT).show();
+                        user.child("location").updateChildren(params).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    address_loader.setVisibility(View.GONE);
+                                    new MaterialAlertDialogBuilder(MoreFrag.this)
+                                            .setMessage("Delivery address has been set up and updated successfully.\nDon`t forget to " +
+                                                    "setup Location coordinates")
+                                            .setPositiveButton("Location Coordinates", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    if (isGoggleServicesOk()) {
+                                                        startActivity(new Intent(MoreFrag.this, Maps.class));
+                                                    }
+                                                }
+                                            }).setIcon(R.drawable.ic_done_black_24dp).show();
+                                } else {
+                                    address_loader.setVisibility(View.GONE);
+                                    Toast.makeText(MoreFrag.this, "Failed! Please try again", Toast.LENGTH_SHORT).show();
+                                }
                             }
-                        }
-                    });
+                        });
 
-                }else Toast.makeText(MoreFrag.this, "Fill both residence and city boxes before submitting", Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(MoreFrag.this, "Fill both residence and city boxes before submitting", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.fragment_get_device_location:
-                startActivity(new Intent(MoreFrag.this, Maps.class));
+                if(isGoggleServicesOk()){
+                    startActivity(new Intent(MoreFrag.this,Maps.class));
+                }
                 break;
             case R.id.fragment_more_account:
                 if(FirebaseAuth.getInstance().getCurrentUser() ==null)
@@ -158,8 +198,12 @@ public class MoreFrag extends AppCompatActivity implements View.OnClickListener,
                     startActivity(new Intent(MoreFrag.this, Account.class));
                 break;
             case R.id.fragment_more_history:
-                startActivity(new Intent(MoreFrag.this, History.class));
+                if(FirebaseAuth.getInstance().getCurrentUser() ==null)
+                    new General().openAccountCreation(MoreFrag.this);
+                else
+                    startActivity(new Intent(MoreFrag.this, History.class));
                 break;
+
 
         }
     }
@@ -178,7 +222,7 @@ void getAccountDetails(){
                 if(dataSnapshot.child("name").exists()){
                     name.getEditText().setText(dataSnapshot.child("name").getValue().toString());
                 }
-              if(dataSnapshot.child("location").exists()){
+              if(dataSnapshot.child("location").hasChild("city")){
                   city.getEditText().setText(dataSnapshot.child("location").child("city").getValue().toString());
                   residence.getEditText().setText(dataSnapshot.child("location").child("residence").getValue().toString());
               }

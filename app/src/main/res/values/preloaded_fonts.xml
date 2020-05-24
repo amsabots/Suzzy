@@ -2,6 +2,7 @@
 <resources>
     <array name="preloaded_fonts" translatable="false">
         <item>@font/aclonica</item>
+        <item>@font/amaranth_bold</item>
         <item>@font/arapey</item>
         <item>@font/elsie_swash_caps_black</item>
         <item>@font/luckiest_guy</item>

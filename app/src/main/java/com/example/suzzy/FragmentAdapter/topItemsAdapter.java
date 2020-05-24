@@ -2,6 +2,7 @@ package com.example.suzzy.FragmentAdapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +48,7 @@ public void setOnCardclickListener(OnTopItemCardClickListener listener){
 topItemsList list = itemsLists.get(position);
 holder.textView.setText(list.getName());
        holder.imageView.setImageURI(list.getImageurl());
-       holder.tag.setVisibility(list.getTag() !=null?View.VISIBLE:View.GONE);
+       holder.tag.setVisibility(!TextUtils.isEmpty(list.getTag())?View.VISIBLE:View.GONE);
        holder.tag.setText(list.getTag());
         holder.price.setText("Kshs "+Long.toString(list.getPrice()) +"/"+list.getUnit());
 
@@ -57,7 +58,7 @@ holder.textView.setText(list.getName());
         imgview.mutate();
         yellowtag.mutate();
        blacktag.mutate();
-       if(list.getTag() != null) {
+       if(!TextUtils.isEmpty(list.getTag())) {
            if (list.getTag().toLowerCase().indexOf("express".toLowerCase()) != -1) {
                holder.tag.setBackground(blacktag);
            } else holder.tag.setBackground(yellowtag);

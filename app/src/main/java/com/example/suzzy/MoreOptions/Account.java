@@ -7,11 +7,14 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.suzzy.GeneralClasses.TimeAgo;
 import com.example.suzzy.MainActivity;
+import com.example.suzzy.MainFrags.MoreFrag;
 import com.example.suzzy.R;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -30,23 +34,30 @@ import java.util.Date;
 
 public class Account extends AppCompatActivity implements View.OnClickListener {
     MaterialToolbar toolbar;
-    MaterialButton delete, logout;
+    MaterialButton delete, logout, reset;
     ProgressDialog progressDialog;
     TextView email, time;
+    DatabaseReference mref;
+    String mUser;
+    private static final String TAG = "Account";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
+        mref = FirebaseDatabase.getInstance().getReference();
+        mUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
         toolbar = findViewById(R.id.account_toolbar);
         delete = findViewById(R.id.account_delete_account);
         logout = findViewById(R.id.account_logout);
+        reset = findViewById(R.id.account_reset);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("");
         progressDialog = new ProgressDialog(this);
         delete.setOnClickListener(this);
         logout.setOnClickListener(this);
+        reset.setOnClickListener(this);
         email = findViewById(R.id.account_email);
         time = findViewById(R.id.account_date_stamp);
         FirebaseDatabase.getInstance().getReference().child("Users").child(
@@ -54,11 +65,11 @@ public class Account extends AppCompatActivity implements View.OnClickListener {
         ).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                SimpleDateFormat sfd = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-              email.setText(dataSnapshot.child("email").getValue().toString());
-              time.setText(
-                      sfd.format(new Date(dataSnapshot.child("date_created").getValue(Long.class)))
-              );
+                email.setText(dataSnapshot.child("email").hasChild("email")? dataSnapshot
+                        .child("email").getValue().toString():"Not set");
+                time.setText(dataSnapshot.child("email").hasChild("time")?
+                        TimeAgo.getTimeAgo(dataSnapshot.child("date_created").getValue(Long.class),
+                        Account.this):"not set");
             }
 
             @Override
@@ -86,13 +97,13 @@ public class Account extends AppCompatActivity implements View.OnClickListener {
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 progressDialog.dismiss();
-                                                if (task.isSuccessful()){
+                                                if (task.isSuccessful()) {
 
                                                     Toast.makeText(Account.this, "Successfully Logged out", Toast.LENGTH_SHORT).show();
-                                                    startActivity(new Intent(Account.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|
+                                                    startActivity(new Intent(Account.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                                                             Intent.FLAG_ACTIVITY_CLEAR_TASK));
                                                     finish();
-                                                }else{
+                                                } else {
                                                     Toast.makeText(Account.this, "Action failed Please try again", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
@@ -116,39 +127,30 @@ public class Account extends AppCompatActivity implements View.OnClickListener {
                                 progressDialog.setMessage("Deleting User information.....");
                                 progressDialog.show();
                                 progressDialog.setCanceledOnTouchOutside(false);
-                                FirebaseDatabase.getInstance().getReference().child("Users")
-                                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                        .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        progressDialog.dismiss();
-                                        if(task.isSuccessful()){
-                                            progressDialog.setMessage("Logging you off from the App......");
-                                            progressDialog.show();
-                                            progressDialog.setCanceledOnTouchOutside(false);
-                                            AuthUI.getInstance()
-                                                    .delete(Account.this)
-                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            progressDialog.dismiss();
-                                                            if (task.isSuccessful()){
-                                                                Toast.makeText(Account.this, "Your account has been successfully deleted", Toast.LENGTH_SHORT).show();
-                                                                startActivity(new Intent(Account.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|
-                                                                        Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                                                                finish();
+                                progressDialog.setMessage("Logging you off from the App......");
+                                progressDialog.show();
+                                progressDialog.setCanceledOnTouchOutside(false);
+                               mref.child("Orders").orderByChild("Customer").equalTo(mUser)
+                                       .addListenerForSingleValueEvent(new ValueEventListener() {
+                                           @Override
+                                           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                               Log.i(TAG, "onDataChange: "+dataSnapshot.toString());
+                                               if (dataSnapshot.exists()){
+                                                   for (DataSnapshot data:dataSnapshot.getChildren()
+                                                        ) {
+                                                       mref.child("Orders").child(data.getKey()).removeValue();
+                                                   }
+                                                   deleteUser();
+                                               }else{
+                                                   deleteUser();
+                                               }
+                                           }
 
-                                                            }else{
-                                                                Toast.makeText(Account.this, "Action failed Please try again", Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        }
-                                                    });
+                                           @Override
+                                           public void onCancelled(@NonNull DatabaseError databaseError) {
 
-
-                                        }else{
-                                            Toast.makeText(Account.this, "Network error, Please try again", Toast.LENGTH_SHORT).show();
-                                        }
-                                    }
-                                });
+                                           }
+                                       });
 
                             }
                         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -158,6 +160,66 @@ public class Account extends AppCompatActivity implements View.OnClickListener {
                     }
                 }).show();
                 break;
+            case R.id.account_reset:
+                new MaterialAlertDialogBuilder(Account.this)
+                        .setMessage("Reset account information i.e name, location and phonenumber")
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                progressDialog.setMessage("Reseting.....");
+                                progressDialog.setCanceledOnTouchOutside(false);
+                                progressDialog.show();
+                                mref.child("Users").child(mUser).child("name").removeValue();
+                                mref.child("Users").child(mUser).child("phone").removeValue();
+                                mref.child("Users").child(mUser).child("location").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        progressDialog.dismiss();
+                                        startActivity(new Intent(Account.this, MoreFrag.class));
+                                    }
+                                });
+                            }
+                        }).setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
+                break;
         }
+    }
+
+    private void deleteUser() {
+        mref.child("Users").child(mUser).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+             if (task.isSuccessful()){
+                 AuthUI.getInstance().delete(Account.this).addOnCompleteListener(new OnCompleteListener<Void>() {
+                     @Override
+                     public void onComplete(@NonNull Task<Void> task) {
+                         progressDialog.dismiss();
+                         if(task.isSuccessful()){
+                             Toast.makeText(Account.this, "Account delete successfully", Toast.LENGTH_SHORT).show();
+                             startActivity(new Intent(Account.this, MainActivity.class)
+                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                         }
+                     }
+                 });
+
+             }else{
+                 AuthUI.getInstance().delete(Account.this).addOnCompleteListener(new OnCompleteListener<Void>() {
+                     @Override
+                     public void onComplete(@NonNull Task<Void> task) {
+                         progressDialog.dismiss();
+                         if(task.isSuccessful()){
+                             Toast.makeText(Account.this, "Account delete successfully", Toast.LENGTH_SHORT).show();
+                             startActivity(new Intent(Account.this, MainActivity.class)
+                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                         }
+                     }
+                 });
+             }
+            }
+        });
     }
 }

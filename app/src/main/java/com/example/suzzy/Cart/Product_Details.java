@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainActivity;
 import com.example.suzzy.MainFrags.CartFrag;
 import com.example.suzzy.R;
+import com.example.suzzy.Search;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.SnapshotParser;
@@ -58,6 +60,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import static com.example.suzzy.MainActivity.CATEGORY_ID;
+import static com.example.suzzy.MainActivity.CATEGORY_TYPE;
+import static com.example.suzzy.MainActivity.ITEM_ID;
+import static com.example.suzzy.MainActivity.ITEM_NAME;
+
 public class Product_Details extends AppCompatActivity implements ProductDetails_Adapter.OnCardItemClickListener,
         View.OnClickListener {
     ViewPager viewpager;
@@ -79,6 +86,7 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
     int currentImage, imagessize;
     ProductDetails_Adapter itemsAdapter;
     ImageView arro_back, cancel_back;
+    EditText main_searchview;
 
 
     @Override
@@ -112,6 +120,8 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
         cancel_back = findViewById(R.id.cart_get_to_parent_cancel);
         arro_back.setOnClickListener(this);
         cancel_back.setOnClickListener(this);
+        main_searchview = findViewById(R.id.main_searchview);
+        main_searchview.setOnClickListener(this);
 
     }
 
@@ -123,7 +133,7 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
             mref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
+                    if (dataSnapshot.child("location").hasChild("city")) {
                         location.setText(dataSnapshot.child("residence").getValue().toString() + ", " +
                                 dataSnapshot.child("city").getValue().toString());
                         Log.i(TAG, "onCreate: Location " + dataSnapshot.toString());
@@ -272,9 +282,11 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
 
     @Override
     public void onCardItemClick(int position) {
-        Intent intent = new Intent(Product_Details.this, Categories.class);
-        intent.putExtra("categoryid", mainItemList.get(position).getCategoryid());
-        intent.putExtra("type", "item");
+        Intent intent = new Intent(Product_Details.this,Categories.class);
+        intent.putExtra(CATEGORY_ID, mainItemList.get(position).getCategoryid());
+        intent.putExtra(CATEGORY_TYPE,"item");
+        intent.putExtra(ITEM_ID, mainItemList.get(position).getId());
+        intent.putExtra(ITEM_NAME, mainItemList.get(position).getName());
         startActivity(intent);
     }
 
@@ -283,11 +295,14 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
         switch (v.getId()) {
             case R.id.cart_get_to_parent_cancel:
                 Intent intent = new Intent(Product_Details.this, Categories.class);
-                intent.putExtra("type", "all");
+                intent.putExtra(CATEGORY_TYPE, "all");
                 startActivity(intent);
                 break;
             case R.id.cart_get_to_parent:
                 startActivity(new Intent(Product_Details.this, MainActivity.class));
+                break;
+            case R.id.main_searchview:
+                startActivity(new Intent(Product_Details.this, Search.class));
                 break;
         }
     }

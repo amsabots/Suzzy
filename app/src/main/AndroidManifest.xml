@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.suzzy" >
-
-    <meta-data
-        android:name="com.facebook.sdk.ApplicationId"
-        android:value="@string/facebook_app_id" />
-
-    <uses-permission android:name="android.permission.INTERNET" />
+    package="com.example.suzzy">
 
     <application
+        android:name=".Suzzy"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name=".Suzzy">
-        <activity android:name=".Cart.Product_Details" android:parentActivityName=".Cart.Categories"/>
+        android:theme="@style/AppTheme">
+        <activity android:name=".Search"/>
+        <activity
+            android:name=".MoreOptions.MapsActivity"
+            android:label="@string/title_activity_maps" />
+        <activity
+            android:name=".Cart.Product_Details"
+            android:parentActivityName=".Cart.Categories" />
         <activity
             android:name=".MoreOptions.Maps"
             android:parentActivityName=".MainActivity" />
@@ -39,7 +39,7 @@
         <activity android:name=".MainFrags.MoreFrag" />
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="adjustPan" >
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -48,8 +48,23 @@
         </activity>
 
         <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
     </application>
+
+    <meta-data
+        android:name="com.facebook.sdk.ApplicationId"
+        android:value="@string/facebook_app_id" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

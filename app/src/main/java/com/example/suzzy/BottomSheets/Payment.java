@@ -1,9 +1,8 @@
-package com.example.suzzy;
+package com.example.suzzy.BottomSheets;
 
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,14 +18,12 @@ import android.widget.Toast;
 
 import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainFrags.MoreFrag;
-import com.example.suzzy.MoreOptions.History;
+import com.example.suzzy.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,7 +44,6 @@ import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import static com.example.suzzy.MainFrags.CartFrag.SUB_TOTALCOST;
-import static com.example.suzzy.MainFrags.CartFrag.TOTAL_ITEMS;
 
 public class Payment extends BottomSheetDialogFragment implements View.OnClickListener {
     ImageView toggle_explanation;
@@ -57,7 +53,7 @@ public class Payment extends BottomSheetDialogFragment implements View.OnClickLi
             checkout_subtotal, location, name;
     List<TextView> textViews;
     String total, mname, mlocation, payment_method, muser;
-    long mcount;
+    long mcount, total_amount;
     private static final String TAG = "Payment";
 
     public static Payment newInstace() {
@@ -78,7 +74,7 @@ SendDataBackToHostingActivity mCallback;
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.payment, container, false);
+        View view = inflater.inflate(R.layout.payment_bottom_sheet, container, false);
         initViews(view);
         underLineViews();
         total = getArguments().getString(SUB_TOTALCOST);
@@ -137,13 +133,19 @@ SendDataBackToHostingActivity mCallback;
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 progressDialog.dismiss();
-                name.setText(dataSnapshot.child("name").getValue().toString());
-                DataSnapshot locate = dataSnapshot.child("location");
-                location.setText(locate.child("residence").getValue().toString() + ", " +
-                        locate.child("city").getValue().toString());
-                mname = dataSnapshot.child("name").getValue().toString();
-                mlocation = locate.child("residence").getValue().toString() + ", " +
-                        locate.child("city").getValue().toString();
+                if(dataSnapshot.child("name").exists()){
+                    name.setText(dataSnapshot.child("name").getValue().toString());
+
+                }
+                if(dataSnapshot.child("location").exists()){
+                    DataSnapshot locate = dataSnapshot.child("location");
+                    location.setText(locate.child("residence").getValue().toString() + ", " +
+                            locate.child("city").getValue().toString());
+                    mname = dataSnapshot.child("name").getValue().toString();
+                    mlocation = locate.child("residence").getValue().toString() + ", " +
+                            locate.child("city").getValue().toString();
+                }
+
                 mcount = dataSnapshot.child("Cart").getChildrenCount();
             }
 
@@ -196,10 +198,11 @@ SendDataBackToHostingActivity mCallback;
         params.put("status", "Pending confirmation");
         params.put("packaging", false);
         params.put("number", mcount);
-        params.put("amount", total);
+        params.put("amount",Long.parseLong(total));
         params.put("message", "awaiting order and packaging receipt confirmation");
         params.put("payment_method", payment_method);
         params.put("Customer",muser);
+        params.put("delete", true);
        final DatabaseReference database = FirebaseDatabase.getInstance().getReference();
        final String uniqID = database.push().getKey();
                database.child("Orders").child(uniqID).updateChildren(params)
@@ -267,7 +270,7 @@ SendDataBackToHostingActivity mCallback;
                     });
             if(i == item_ids.size() -1 ){
                 progressDialog.dismiss();
-                mCallback.dataAttached("payment");
+                mCallback.dataAttached("payment_bottom_sheet");
             }
         }
     }

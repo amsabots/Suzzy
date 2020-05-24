@@ -19,7 +19,7 @@ import com.example.suzzy.Cart.Categories;
 import com.example.suzzy.GeneralClasses.General;
 import com.example.suzzy.MainActivity;
 import com.example.suzzy.MoreOptions.History;
-import com.example.suzzy.Payment;
+import com.example.suzzy.BottomSheets.Payment;
 import com.example.suzzy.R;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -46,6 +46,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import static com.example.suzzy.MainActivity.CATEGORY_TYPE;
+
 public class CartFrag extends AppCompatActivity implements  View.OnClickListener, Payment.SendDataBackToHostingActivity{
     private RecyclerView recyclerView;
     private ProgressDialog progressDialog;
@@ -54,6 +56,7 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
     List<CartList> list;
     TextView subTotal, location, change_location;
     Button checkout;
+    Payment payment;
     BottomNavigationView bottomNavigationView;
     ImageView arro_back, cancel_back;
     private static final String TAG = "CartFrag";
@@ -78,6 +81,7 @@ public class CartFrag extends AppCompatActivity implements  View.OnClickListener
         arro_back.setOnClickListener(this);
         cancel_back.setOnClickListener(this);
         checkout.setOnClickListener(this);
+        payment = Payment.newInstace();
         User = FirebaseAuth.getInstance()
                 .getCurrentUser().getUid();
         getSubtotal(User);
@@ -122,7 +126,7 @@ void setLocation(){
         mref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
+                if (dataSnapshot.child("location").hasChild("city")) {
                     location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
                             dataSnapshot.child("city").getValue().toString());
                     Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
@@ -150,19 +154,47 @@ void setLocation(){
     switch (v.getId()){
         case R.id.cart_get_to_parent_cancel:
             Intent intent = new Intent(CartFrag.this, Categories.class);
-            intent.putExtra("type", "all");
+            intent.putExtra(CATEGORY_TYPE, "all");
             startActivity(intent);
             break;
         case R.id.cart_get_to_parent:
             startActivity(new Intent(CartFrag.this, MainActivity.class));
             break;
         case R.id.proceed_to_checkout_button:
-            Bundle bundle = new Bundle();
-            bundle.putString(SUB_TOTALCOST, subTotal.getText().toString());
-            bundle.putLong(TOTAL_ITEMS, items);
-            Payment payment = Payment.newInstace();
-            payment.setArguments(bundle);
-            payment.show(getSupportFragmentManager(), "Payment");
+            FirebaseDatabase.getInstance().getReference().child("Users").child(User)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                         if(dataSnapshot.exists()){
+                             if(!dataSnapshot.child("name").exists()|| !dataSnapshot.child("phone").exists()
+                             ||!dataSnapshot.child("location").exists()){
+                                new MaterialAlertDialogBuilder(CartFrag.this)
+                                        .setMessage("You must provide your valid name, phonenumber and pick up location " +
+                                                "before checking out")
+                                        .setIcon(getResources().getDrawable(R.drawable.ic_info_black_24dp))
+                                        .setPositiveButton("Update Information", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                startActivity(new Intent(CartFrag.this, MoreFrag.class));
+                                            }
+                                        }).setCancelable(false)
+                                        .show();
+                             }else{
+                                 Bundle bundle = new Bundle();
+                                 bundle.putString(SUB_TOTALCOST, subTotal.getTag().toString());
+                                 bundle.putLong(TOTAL_ITEMS, items);
+                                 payment.setArguments(bundle);
+                                 payment.show(getSupportFragmentManager(), "Payment");
+                             }
+                         }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
             break;
 
     }
@@ -171,6 +203,7 @@ void setLocation(){
     @Override
     public void dataAttached(String data) {
         dataListener = data;
+        payment.dismiss();
         new MaterialAlertDialogBuilder(CartFrag.this)
                 .setMessage("Your order has been submitted successfully, Proceed to " +
                         "activity history to track the status of your package")
@@ -179,12 +212,23 @@ void setLocation(){
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         startActivity(new Intent(CartFrag.this, History.class));
+
                     }
-                }).setCancelable(false)
+                }).setNegativeButton("Continue Shopping", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(CartFrag.this, Categories.class);
+                intent.putExtra(CATEGORY_TYPE, "all");
+                startActivity(intent);
+            }
+        })
+                .setCancelable(false)
                 .show();
         FirebaseDatabase.getInstance().getReference().child("Users").child(User)
                 .child("Cart")
                 .removeValue();
+        checkout.setEnabled(false);
+        checkout.setText("No shopping Items");
     }
 
 
@@ -463,7 +507,10 @@ void setLocation(){
                         long number = items.child("number").getValue(Long.class);
                         total += (price * number);
                         subTotal.setText("Sub Total: Ksh " + total);
-                        subtotal = total;
+                        subTotal.setTag(total);
+                    }
+                    if(total ==0){
+                        checkout.setVisibility(View.GONE);
                     }
                 } else subTotal.setText("Sub Total: Ksh 0");
             }

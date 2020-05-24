@@ -3,7 +3,6 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="googleapikey">AIzaSyCRVuxylIitzJeA5W8EOnJe6LF6NiKMd_o</string>
     <string name="facebook_application_id" translatable="false">523611745211059</string>
     <!-- Facebook Application ID, prefixed by 'fb'. Enables Chrome Custom tabs. -->
     <string name="facebook_login_protocol_scheme" translatable="false">fb523611745211059</string>
@@ -23,5 +22,6 @@
         ordered to you. Before payment, check the status of your items for any damages. Also make sure you confirm the rider vehicle registration.</string>
     <string name="explain_mpesa">Pay the total amount shown above and proceed to confirm your order, Your payment will be confirmed in less than 5 mins
         and the goods should be on transit to  your specified location. Remember you cannot delete an order after packaging and delivery in progress has been confirmed</string>
+    <string name="title_activity_maps">Map</string>
 
 </resources>

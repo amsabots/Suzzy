@@ -52,15 +52,6 @@ holder.textView.setText(list.getCategoryname());
         Drawable imgview = context.getResources().getDrawable(R.drawable.bacground_cardview);
         imgview.mutate();
         holder.background.setBackground(imgview);
-        holder.background.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, Categories.class);
-                intent.putExtra("categoryid", list.getCategoryID());
-                intent.putExtra("type", "item");
-                context.startActivity(intent);
-            }
-        });
     }
 
     @Override

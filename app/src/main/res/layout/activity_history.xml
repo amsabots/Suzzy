@@ -16,7 +16,7 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/history_toolbar"
-            style="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            style="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
