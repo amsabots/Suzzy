@@ -59,7 +59,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-
 import static com.example.suzzy.MainActivity.CATEGORY_ID;
 import static com.example.suzzy.MainActivity.CATEGORY_TYPE;
 import static com.example.suzzy.MainActivity.ITEM_ID;
@@ -94,8 +93,8 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product__details);
         //getting the sent bundle from category and cart activity
-        category_id = getIntent().getStringExtra("category");
-        item_id = getIntent().getStringExtra("item");
+        category_id = getIntent().getStringExtra(CATEGORY_ID);
+        item_id = getIntent().getStringExtra(ITEM_ID);
         //initialising the sooooo many views in the xml layout
         initViews();
         //init the productList
@@ -133,7 +132,7 @@ public class Product_Details extends AppCompatActivity implements ProductDetails
             mref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.child("location").hasChild("city")) {
+                    if (dataSnapshot.hasChild("city")) {
                         location.setText(dataSnapshot.child("residence").getValue().toString() + ", " +
                                 dataSnapshot.child("city").getValue().toString());
                         Log.i(TAG, "onCreate: Location " + dataSnapshot.toString());

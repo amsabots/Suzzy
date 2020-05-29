@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -50,6 +51,7 @@ public class History extends AppCompatActivity implements HistoryAdapter.OnCardI
     public static final String ORDER_ID = "last kings";
     public static final String ORDER_POSITION = "trial and error";
     private static final String TAG = "History";
+    SwipeRefreshLayout refresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,7 @@ public class History extends AppCompatActivity implements HistoryAdapter.OnCardI
         toolbar = findViewById(R.id.history_toolbar);
         setSupportActionBar(toolbar);
         mainList = new ArrayList<>();
+        refresh = findViewById(R.id.history_refresh);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Orders History");
         recyclerView = findViewById(R.id.history_recclerview);
@@ -74,7 +77,12 @@ public class History extends AppCompatActivity implements HistoryAdapter.OnCardI
         orderDetails = OrderDetails.newInstance(this);
         getHistory();
 
-
+        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getHistory();
+            }
+        });
     }
 
 
@@ -82,50 +90,52 @@ public class History extends AppCompatActivity implements HistoryAdapter.OnCardI
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.setMessage("Please wait.....");
         progressDialog.show();
-       mref.child("Orders").addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               mainList.clear();
-               Log.i(TAG, "onDataChange: "+dataSnapshot.toString());
-               progressDialog.dismiss();
-               for (DataSnapshot data:dataSnapshot.getChildren()
-                    ) {
-                   if(TextUtils.equals(data.child("Customer").getValue().toString(), mUser)){
-                       OrderList orderList = new OrderList();
-                       orderList.setAmount(data.child("amount").getValue(Long.class));
-                       orderList.setId(data.getKey());
-                       orderList.setTime(data.child("time").getValue(Long.class));
-                       orderList.setStatus(data.child("status").getValue().toString());
-                       mainList.add(orderList);
-                       adapter.notifyDataSetChanged();
-                   }
+        mref.child("Orders").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                mainList.clear();
+                Log.i(TAG, "onDataChange: " + dataSnapshot.toString());
+                progressDialog.dismiss();
+                refresh.setRefreshing(false);
+                for (DataSnapshot data : dataSnapshot.getChildren()
+                ) {
+                    if (TextUtils.equals(data.child("Customer").getValue().toString(), mUser)) {
+                        OrderList orderList = new OrderList();
+                        orderList.setAmount(data.child("amount").getValue(Long.class));
+                        orderList.setId(data.getKey());
+                        orderList.setTime(data.child("time").getValue(Long.class));
+                        orderList.setStatus(data.child("status").getValue().toString());
+                        mainList.add(orderList);
+                        adapter.notifyDataSetChanged();
+                    }
 
-               }
-               if(mainList.size() < 1){
-                   new MaterialAlertDialogBuilder(History.this)
-                           .setIcon(R.drawable.ic_info_black_24dp)
-                           .setCancelable(false)
-                           .setTitle("No History")
-                           .setMessage("You have no app History at the moment, Continue shopping with us")
-                           .setPositiveButton("Start Shopping", new DialogInterface.OnClickListener() {
-                               @Override
-                               public void onClick(DialogInterface dialog, int which) {
-                                   Intent intent = new Intent(History.this, Categories.class);
-                                   intent.putExtra(CATEGORY_TYPE, "all");
-                                   startActivity(intent);
-                               }
-                           }).show();
-               }
-               Log.i(TAG, "onDataChange: LISTSIZE "+ mainList.size());
-           }
+                }
+                if (mainList.size() < 1) {
+                    new MaterialAlertDialogBuilder(History.this)
+                            .setIcon(R.drawable.ic_info_black_24dp)
+                            .setCancelable(false)
+                            .setTitle("No History")
+                            .setMessage("You have no app History at the moment, Continue shopping with us")
+                            .setPositiveButton("Start Shopping", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent(History.this, Categories.class);
+                                    intent.putExtra(CATEGORY_TYPE, "all");
+                                    startActivity(intent);
+                                }
+                            }).show();
+                }
+                Log.i(TAG, "onDataChange: LISTSIZE " + mainList.size());
+            }
 
-           @Override
-           public void onCancelled(@NonNull DatabaseError databaseError) {
-progressDialog.dismiss();
-               Toast.makeText(History.this, "We cannot complete your request at this moment",
-                       Toast.LENGTH_SHORT).show();
-           }
-       });
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                progressDialog.dismiss();
+                refresh.setRefreshing(false);
+                Toast.makeText(History.this, "We cannot complete your request at this moment",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
@@ -140,7 +150,7 @@ progressDialog.dismiss();
 
     @Override
     public void deleteSelectedItem(final int position) {
-       final DatabaseReference orders = FirebaseDatabase.getInstance().getReference().child("Orders")
+        final DatabaseReference orders = FirebaseDatabase.getInstance().getReference().child("Orders")
                 .child(mainList.get(position).getId());
         progressDialog.setMessage("Deleting.....");
         progressDialog.setCanceledOnTouchOutside(false);
@@ -149,8 +159,7 @@ progressDialog.dismiss();
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 progressDialog.dismiss();
-                orderDetails.dismiss();
-                if(dataSnapshot.child("delete").getValue(Boolean.class)){
+                if (dataSnapshot.child("delete").getValue(Boolean.class)) {
                     orders.removeValue().addOnCompleteListener(
                             new OnCompleteListener<Void>() {
                                 @Override
@@ -159,12 +168,13 @@ progressDialog.dismiss();
                                         Toast.makeText(History.this, "Item removed successfully", Toast.LENGTH_SHORT).show();
                                         mainList.remove(position);
                                         adapter.notifyItemRemoved(position);
-                                        adapter.notifyItemRangeChanged(position, mainList.size());
+                                        adapter.notifyItemRangeRemoved(position, mainList.size());
+                                        orderDetails.dismiss();
                                     }
                                 }
                             }
                     );
-                }else{
+                } else {
                     new MaterialAlertDialogBuilder(History.this)
                             .setMessage("This Order cannot be removed since its already on transit to your specified location")
                             .setIcon(getResources().getDrawable(R.drawable.ic_warning_black_24dp))

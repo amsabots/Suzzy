@@ -126,7 +126,7 @@ void setLocation(){
         mref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.child("location").hasChild("city")) {
+                if (dataSnapshot.hasChild("city")) {
                     location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
                             dataSnapshot.child("city").getValue().toString());
                     Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
@@ -330,7 +330,6 @@ void setLocation(){
                         .inflate(R.layout.cart_item_list_cardview, parent, false);
                 viewHolder vh = new viewHolder(view);
                 loadviewholder(vh);
-
                 return vh;
             }
 

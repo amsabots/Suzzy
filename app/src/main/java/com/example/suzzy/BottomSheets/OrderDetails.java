@@ -92,9 +92,12 @@ public class OrderDetails extends BottomSheetDialogFragment {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 progressDialog.dismiss();
-                              topItemsList list = dataSnapshot.getValue(topItemsList.class);
-                              mainList.add(list);
-                              adapter.notifyDataSetChanged();
+                                if(dataSnapshot.exists()){
+                                    topItemsList list = dataSnapshot.getValue(topItemsList.class);
+                                    mainList.add(list);
+                                    adapter.notifyDataSetChanged();
+                                }
+
                             }
 
                             @Override
@@ -128,10 +131,16 @@ public class OrderDetails extends BottomSheetDialogFragment {
                 payment_method.setText(dataSnapshot.child("payment_method").getValue().toString());
                 done_ticks.setVisibility(!dataSnapshot.child("status").getValue().toString()
                         .equalsIgnoreCase("Pending confirmation")?View.VISIBLE:View.GONE);
-                done_ticks.setImageDrawable(dataSnapshot.child("status").getValue().toString()
-                        .equalsIgnoreCase("Order delivered")?
-                        getResources().getDrawable(R.drawable.ic_done_all_black_24dp):
-                        getResources().getDrawable(R.drawable.ic_done_black_24dp));
+                if(!dataSnapshot.child("status").getValue().toString()
+                        .equalsIgnoreCase("Pending confirmation")){
+                    done_ticks.setImageDrawable(dataSnapshot.child("status").getValue().toString()
+                            .equalsIgnoreCase("order delivered") &&dataSnapshot.child("status")
+                            .getValue().toString()
+                            .equalsIgnoreCase("package on transit")?
+                            getResources().getDrawable(R.drawable.ic_done_all_black_24dp):
+                            getResources().getDrawable(R.drawable.ic_done_black_24dp));
+                }
+
                 message.setText(getDatasnapshotValue("message", dataSnapshot));
                 status.setText(getDatasnapshotValue("status", dataSnapshot));
                 if (dataSnapshot.child("rider").exists()) {

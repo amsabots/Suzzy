@@ -97,8 +97,8 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
         list = new ArrayList<>();
         adapter = new Categories_Adapter(list, this);
         //Log.i(TAG, "onCreate: " + getIntent().getStringExtra("category") + getIntent().getStringExtra("category_id"));
-           type = getIntent().getStringExtra(CATEGORY_TYPE);
-           categoryid = getIntent().getStringExtra(CATEGORY_ID);
+        type = getIntent().getStringExtra(CATEGORY_TYPE);
+        categoryid = getIntent().getStringExtra(CATEGORY_ID);
         productsRecyclerv = findViewById(R.id.category_list_recyclerview);
         productsRecyclerv.setHasFixedSize(true);
         productsRecyclerv.setAdapter(adapter);
@@ -150,7 +150,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
             mref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.child("location").hasChild("city")) {
+                    if (dataSnapshot.hasChild("city")) {
                         location.setText(dataSnapshot.child("residence").getValue().toString() + ", " +
                                 dataSnapshot.child("city").getValue().toString());
                         Log.i(TAG, "onCreate: Location " + dataSnapshot.toString());
@@ -192,7 +192,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
         }
         mainref.keepSynced(true);
 
-        mainref.addValueEventListener(new ValueEventListener() {
+        mainref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 progressDialog.dismiss();
@@ -211,15 +211,15 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
                                             ProductList productList = item.getValue(ProductList.class);
                                             list.add(productList);
                                             adapter.notifyDataSetChanged();
-                                        }else{
+                                        } else {
                                             ProductList productList = item.getValue(ProductList.class);
                                             list.add(productList);
-                                             List<ProductList> filteredList = Lists.newArrayList(Collections2.filter(list,
-                                                     new ItemFilter(getIntent()
-                                                             .getStringExtra(ITEM_NAME).toLowerCase())));
-                                             list.clear();
-                                             list.addAll(filteredList);
-                                             adapter.notifyDataSetChanged();
+                                            List<ProductList> filteredList = Lists.newArrayList(Collections2.filter(list,
+                                                    new ItemFilter(getIntent()
+                                                            .getStringExtra(ITEM_NAME).toLowerCase())));
+                                            list.clear();
+                                            list.addAll(filteredList);
+                                            adapter.notifyDataSetChanged();
                                         }
                                     }
                                 }
@@ -230,7 +230,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
                                         ProductList productList = item.getValue(ProductList.class);
                                         list.add(productList);
                                         adapter.notifyDataSetChanged();
-                                    } else{
+                                    } else {
                                         ProductList productList = item.getValue(ProductList.class);
                                         list.add(productList);
                                         List<ProductList> filteredList = Lists.newArrayList(Collections2.filter(list,
@@ -246,11 +246,11 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
                             });
 
                         } else {
-                            if(!type.equals("item")) {
+                            if (!type.equals("item")) {
                                 ProductList productList = item.getValue(ProductList.class);
                                 list.add(productList);
                                 adapter.notifyDataSetChanged();
-                            }else{
+                            } else {
                                 ProductList productList = item.getValue(ProductList.class);
                                 list.add(productList);
                                 List<ProductList> filteredList = Lists.newArrayList(Collections2.filter(list,
@@ -310,6 +310,7 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
         }
 
     }
+
     @Override
     public void onLikedClikcked(int position) {
 
@@ -323,56 +324,79 @@ public class Categories extends AppCompatActivity implements Categories_Adapter.
     @Override
     public void openDetailsClicked(int position) {
         Intent intent = new Intent(Categories.this, Product_Details.class);
-        intent.putExtra("category", list.get(position).getCategoryid());
-        intent.putExtra("item", list.get(position).getId());
+        intent.putExtra(CATEGORY_ID, list.get(position).getCategoryid());
+        intent.putExtra(ITEM_ID, list.get(position).getId());
         startActivity(intent);
     }
 
 
     public void saveToUserCart(final int position) {
-        progressDialog.setCanceledOnTouchOutside(false);
-        progressDialog.show();
-        list.get(position).setLoading(true);
-        adapter.notifyDataSetChanged();
-        if (!list.get(position).isSavedinCart()) {
-            DatabaseReference cart = FirebaseDatabase.getInstance().getReference().child("Users")
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            FirebaseDatabase.getInstance().getReference().child("Users")
                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                    .child("Cart").push();
-            ProductList p = list.get(position);
-            CartList cartList = new CartList(p.getPrice(), 1, System.currentTimeMillis(), p.getUnit(), p.getSize(),
-                    p.getName(), p.getId(), p.getImageurl(), p.getTag(), p.getCategoryid(), p.getDesc());
-            cart.setValue(cartList).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        progressDialog.dismiss();
-                        Snackbar.make(snack, "added to cart", BaseTransientBottomBar.LENGTH_SHORT)
-                                .setDuration(500)
-                                .show();
-                        list.remove(position);
-                        adapter.notifyItemRemoved(position);
-                        adapter.notifyItemRangeChanged(position, list.size());
-//                        list.get(position).setSavedinCart(true);
-//                        adapter.notifyDataSetChanged();
-                    } else {
-                        progressDialog.dismiss();
-                        Toast.makeText(Categories.this, "Task failed, Please try again", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    progressDialog.dismiss();
-                    Snackbar.make(snack, "Task failed, Please try again", BaseTransientBottomBar.LENGTH_SHORT)
-                            .show();
-                }
-            });
+                    .child("Cart").orderByChild("id").equalTo(list.get(position).getId())
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (!dataSnapshot.exists()) {
+                                progressDialog.setCanceledOnTouchOutside(false);
+                                progressDialog.show();
+                                list.get(position).setLoading(true);
+                                adapter.notifyDataSetChanged();
+                                if (!list.get(position).isSavedinCart()) {
+                                    DatabaseReference cart = FirebaseDatabase.getInstance().getReference().child("Users")
+                                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                            .child("Cart").push();
+                                    ProductList p = list.get(position);
+                                    CartList cartList = new CartList(p.getPrice(), 1, System.currentTimeMillis(), p.getUnit(), p.getSize(),
+                                            p.getName(), p.getId(), p.getImageurl(), p.getTag(), p.getCategoryid(), p.getDesc());
+                                    cart.setValue(cartList).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                progressDialog.dismiss();
+                                                Snackbar.make(snack, "added to cart", BaseTransientBottomBar.LENGTH_SHORT)
+                                                        .setDuration(500)
+                                                        .show();
+                                                list.remove(position);
+                                                adapter.notifyItemRemoved(position);
+                                                adapter.notifyItemRangeChanged(position, list.size());
+                                                ;
+                                            } else {
+                                                progressDialog.dismiss();
+                                                Toast.makeText(Categories.this, "Task failed, Please try again", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            progressDialog.dismiss();
+                                            Snackbar.make(snack, "Task failed, Please try again", BaseTransientBottomBar.LENGTH_SHORT)
+                                                    .show();
+                                        }
+                                    });
+                                } else {
+                                    progressDialog.dismiss();
+                                    Snackbar.make(snack, "item already in your cart", BaseTransientBottomBar.LENGTH_SHORT)
+                                            .setDuration(500)
+                                            .show();
+                                }
+
+                            } else {
+                                Snackbar.make(snack, "item already in your cart", BaseTransientBottomBar.LENGTH_SHORT)
+                                        .show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
         } else {
-            progressDialog.dismiss();
-            Snackbar.make(snack, "item already in your cart", BaseTransientBottomBar.LENGTH_SHORT)
-                    .setDuration(500)
-                    .show();
+            new General().openAccountCreation(Categories.this);
         }
+
 
     }
 

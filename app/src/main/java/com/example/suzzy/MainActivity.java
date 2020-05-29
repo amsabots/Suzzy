@@ -48,12 +48,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener,
         topItemsAdapter.OnTopItemCardClickListener, topCategoryAdapter.CategoryCardClickListener,
@@ -80,7 +82,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static final String CATEGORY_TYPE = "that Java sometimes sucks";
     public static final String ITEM_NAME = "just keeping up with quarentine";
    EditText searchView;
-
+   ConstraintLayout all_categories, top_categories, top_items;
+SwipeRefreshLayout refreshLayout;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -96,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         initExploreandShop();
         initTopCategory();
         initTopItems();
+        refreshLayout = findViewById(R.id.swiperefresh_main);
         //view initialisation
         loader = findViewById(R.id.loading_screen);
         loading = findViewById(R.id.main_activity_loader);
@@ -114,10 +118,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             String USERID = FirebaseAuth.getInstance().getCurrentUser().getUid();
             DatabaseReference mref = FirebaseDatabase.getInstance().getReference().child("Users")
                     .child(USERID).child("location");
-            mref.addListenerForSingleValueEvent(new ValueEventListener() {
+            mref.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.child("location").hasChild("city")) {
+                    if (dataSnapshot.hasChild("city")) {
                        location.setText(dataSnapshot.child("residence").getValue().toString()+", "+
                                dataSnapshot.child("city").getValue().toString());
                         Log.i(TAG, "onCreate: Location "+ dataSnapshot.toString());
@@ -146,6 +150,19 @@ searchView.setOnClickListener(new View.OnClickListener() {
 startActivity(new Intent(MainActivity.this, Search.class));
     }
 });
+reload.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+        LoadExploreandShopData();
+    }
+});
+refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+    @Override
+    public void onRefresh() {
+     LoadExploreandShopData();
+     LoadtopItemsList();
+    }
+});
     }
 
     private void initExploreandShop() {
@@ -158,6 +175,7 @@ startActivity(new Intent(MainActivity.this, Search.class));
         adapter = new ExploreandShopAdapter(MainActivity.this, toplist);
         exploreRecycler.setAdapter(adapter);
         adapter.setOnExploreandShopClickListener(this);
+        all_categories = findViewById(R.id.main_all_categories);
     }
 
     void initTopCategory() {
@@ -168,6 +186,7 @@ startActivity(new Intent(MainActivity.this, Search.class));
         categoryAdapter = new topCategoryAdapter(MainActivity.this, categoryList);
         topcategoryRecyclerview.setAdapter(categoryAdapter);
         categoryAdapter.setOnCategoryCardClickListener(this);
+        top_categories = findViewById(R.id.main_top_category);
 
 
     }
@@ -180,14 +199,16 @@ startActivity(new Intent(MainActivity.this, Search.class));
         itemsAdapter = new topItemsAdapter(MainActivity.this, topItemsLists);
         topitemsRecyclerview.setAdapter(itemsAdapter);
         itemsAdapter.setOnCardclickListener(this);
+        top_items = findViewById(R.id.main_items);
 
     }
     void LoadtopItemsList(){
         DatabaseReference products = mDatabase.child("products");
-        products.keepSynced(true);
+        //products.keepSynced(true);
         products.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                refreshLayout.setRefreshing(false);
                 topItemsLists.clear();
                 for (DataSnapshot product:dataSnapshot.getChildren()
                 ) {
@@ -200,11 +221,12 @@ startActivity(new Intent(MainActivity.this, Search.class));
 
                     }
                 }
-
+                top_items.setVisibility(topItemsLists.size() < 1?View.GONE:View.VISIBLE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+                refreshLayout.setRefreshing(false);
                 //Snackbar.make(snackbar, databaseError.getMessage(), BaseTransientBottomBar.LENGTH_SHORT).show();
             }
         });
@@ -213,31 +235,43 @@ startActivity(new Intent(MainActivity.this, Search.class));
     void LoadExploreandShopData() {
         loader.setVisibility(View.VISIBLE);
         DatabaseReference category = mDatabase.child("category");
-        category.keepSynced(true);
+        //category.keepSynced(true);
         category.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 loader.setVisibility(View.GONE);
                 toplist.clear();
+                refreshLayout.setRefreshing(false);
                 categoryList.clear();
-                for (DataSnapshot category : dataSnapshot.getChildren()
-                ) {
-                    ExploreandShopList exploreandShopList = category.getValue(ExploreandShopList.class);
+                if(dataSnapshot.exists()){
+                    for (DataSnapshot category : dataSnapshot.getChildren()
+                    ) {
+                        ExploreandShopList exploreandShopList = category.getValue(ExploreandShopList.class);
 
-                    toplist.add(exploreandShopList);
-                    adapter.notifyDataSetChanged();
+                        toplist.add(exploreandShopList);
+                        adapter.notifyDataSetChanged();
 
-                    if (category.child("topcategory").getValue(Boolean.class)) {
-                        topCategoryList list = category.getValue(com.example.suzzy.FragmentListClasses.topCategoryList.class);
-                        categoryList.add(list);
-                        categoryAdapter.notifyDataSetChanged();
+                        if (category.child("topcategory").getValue(Boolean.class)) {
+                            topCategoryList list = category.getValue(com.example.suzzy.FragmentListClasses.topCategoryList.class);
+                            categoryList.add(list);
+                            categoryAdapter.notifyDataSetChanged();
+                        }
                     }
+                    top_categories.setVisibility(categoryList.size() < 1?View.GONE:View.VISIBLE);
+                    all_categories.setVisibility(toplist.size() < 1?View.GONE:View.VISIBLE);
+                }else{
+                    all_categories.setVisibility(View.GONE);
+                    top_categories.setVisibility(View.GONE);
+                    loader.setVisibility(View.VISIBLE);
+                    reload.setText("No inventory update. Retry?");
+                    loading.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 loader.setVisibility(View.GONE);
+                refreshLayout.setRefreshing(false);
                 //Snackbar.make(snackbar, databaseError.getMessage(), BaseTransientBottomBar.LENGTH_SHORT).show();
             }
         });
