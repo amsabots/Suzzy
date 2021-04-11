@@ -5,6 +5,7 @@
     <application
         android:name="com.amsabots.suzzy.Suzzy"
         android:allowBackup="true"
+        android:appCategory="productivity"
         android:icon="@mipmap/ic_launcher_custom"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_custom"
