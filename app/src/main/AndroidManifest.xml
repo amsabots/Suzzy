@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.suzzy">
+    package="com.amsabots.suzzy">
 
     <application
-        android:name=".Suzzy"
+        android:name="com.amsabots.suzzy.Suzzy"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher_custom"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_custom"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Search"/>
+        <activity android:name="com.amsabots.suzzy.Search"/>
         <activity
-            android:name=".MoreOptions.MapsActivity"
+            android:name="com.amsabots.suzzy.MoreOptions.MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity
-            android:name=".Cart.Product_Details"
-            android:parentActivityName=".Cart.Categories" />
+            android:name="com.amsabots.suzzy.Cart.Product_Details"
+            android:parentActivityName="com.amsabots.suzzy.Cart.Categories" />
         <activity
-            android:name=".MoreOptions.Maps"
-            android:parentActivityName=".MainActivity" />
+            android:name="com.amsabots.suzzy.MoreOptions.Maps"
+            android:parentActivityName="com.amsabots.suzzy.MainActivity" />
         <activity
-            android:name=".MoreOptions.History"
-            android:parentActivityName=".MainFrags.MoreFrag" />
+            android:name="com.amsabots.suzzy.MoreOptions.History"
+            android:parentActivityName="com.amsabots.suzzy.MainFrags.MoreFrag" />
         <activity
-            android:name=".MoreOptions.Account"
-            android:parentActivityName=".MainFrags.MoreFrag" />
+            android:name="com.amsabots.suzzy.MoreOptions.Account"
+            android:parentActivityName="com.amsabots.suzzy.MainFrags.MoreFrag" />
         <activity
-            android:name=".Cart.Categories"
-            android:parentActivityName=".MainActivity" />
+            android:name="com.amsabots.suzzy.Cart.Categories"
+            android:parentActivityName="com.amsabots.suzzy.MainActivity" />
         <activity
-            android:name=".CreateAccount"
-            android:parentActivityName=".MainActivity" />
-        <activity android:name=".OnboardingScreen" />
+            android:name="com.amsabots.suzzy.CreateAccount"
+            android:parentActivityName="com.amsabots.suzzy.MainActivity" />
+        <activity android:name="com.amsabots.suzzy.OnboardingScreen" />
         <activity
-            android:name=".MainFrags.CartFrag"
-            android:parentActivityName=".MainActivity" />
-        <activity android:name=".MainFrags.MoreFrag" />
+            android:name="com.amsabots.suzzy.MainFrags.CartFrag"
+            android:parentActivityName="com.amsabots.suzzy.MainActivity" />
+        <activity android:name="com.amsabots.suzzy.MainFrags.MoreFrag" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.amsabots.suzzy.MainActivity"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,7 +57,7 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
         <service
-            android:name=".MyFirebaseMessagingService"
+            android:name="com.amsabots.suzzy.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
